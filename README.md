@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BGR Crew Dashboard
 
-## Getting Started
+Mobile-first dashboard for Eugene's Bob Graham Round attempt. The app is designed for crew phones during race day and currently includes:
 
-First, run the development server:
+- Embedded live tracker panel with direct tracker link fallback.
+- Fell-top timeline with planned ETA and placeholders for actual tracker arrivals.
+- Changeover timing cards with runner notes and editable crew notes.
+- Open-Meteo weather snapshots for key crew locations.
+- Pacer schedule by leg.
+- Seeded route, schedule, and crew-point data from the published planning spreadsheet.
+
+## Current state
+
+The first implementation slice is working and production-build clean.
+
+- `GET /api/weather` returns normalized Open-Meteo weather data for key crew locations.
+- `GET /api/notes` and `POST /api/notes` provide the initial note API shape.
+- Crew notes currently save through a server-memory store with local browser fallback.
+
+The note flow is usable for development and UI integration, but it is not yet production-grade shared persistence. The next hardening step is swapping the in-memory notes store for a hosted database.
+
+## Run locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+```
 
-## Learn More
+## Next implementation slices
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Replace the interim note store with real shared persistence.
+2. Ingest actual tracker checkpoint arrivals into the route timeline.
+3. Add richer weather context for overnight crew decisions and exposed locations.

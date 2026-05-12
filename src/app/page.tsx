@@ -1,65 +1,479 @@
-import Image from "next/image";
+import { ChangeoverNotes } from "@/components/changeover-notes";
+import {
+  changeoverLocations,
+  checkpoints,
+  pacerLegs,
+  trackerUrl,
+} from "@/data/bgr-data";
+import {
+  formatClock,
+  formatDayClock,
+  formatDuration,
+  getCheckpointStatus,
+  getCountdown,
+  getCrewPointSummary,
+  getCrewPoints,
+  getPlannedArrival,
+  getRouteCompletion,
+  getSummits,
+  getUpcomingCheckpoints,
+  raceCutoff,
+  raceStart,
+} from "@/lib/race";
+import { describeWeatherCode, getWeatherSummaries } from "@/lib/weather";
 
-export default function Home() {
+const statCardClass =
+  "rounded-[1.75rem] border border-white/60 bg-white/85 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur";
+
+export default async function Home() {
+  const now = new Date();
+  const countdown = getCountdown(now);
+  const nextCrewPoint = getCrewPointSummary(now);
+  const upcomingCheckpoints = getUpcomingCheckpoints(now, 5);
+  const summitCheckpoints = getSummits();
+  const crewPoints = getCrewPoints();
+  const weather = await getWeatherSummaries();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.24),_transparent_22%),radial-gradient(circle_at_top_right,_rgba(244,114,182,0.22),_transparent_18%),linear-gradient(180deg,_#fff8ef_0%,_#f8fbff_38%,_#eef6ff_100%)] pb-20 text-slate-900">
+      <div className="absolute inset-x-0 top-0 -z-10 h-96 bg-[radial-gradient(circle_at_20%_20%,rgba(251,191,36,0.35),transparent_26%),radial-gradient(circle_at_80%_15%,rgba(236,72,153,0.22),transparent_20%),radial-gradient(circle_at_55%_0%,rgba(34,197,94,0.18),transparent_18%)]" />
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+        <section className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
+          <div className="rounded-[2rem] bg-slate-950 px-6 py-7 text-white shadow-[0_24px_90px_rgba(15,23,42,0.28)]">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.32em] text-sky-200/90">
+              <span>Bob Graham Round</span>
+              <span className="rounded-full border border-white/15 px-3 py-1 text-[11px] tracking-[0.25em] text-white/80">
+                Crew dashboard
+              </span>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                  Eugene&apos;s Bob Graham Round
+                </h1>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                  Mobile-first race-day view for tracker access, summit ETAs,
+                  changeover timing, pacers, weather, and crew prep from Moot
+                  Hall to Moot Hall.
+                </p>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/8 px-5 py-4 backdrop-blur">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-200">
+                  {countdown.label}
+                </p>
+                <p className="mt-2 text-3xl font-semibold text-white">
+                  {countdown.value}
+                </p>
+                <p className="mt-1 text-sm text-slate-300">
+                  {countdown.detail}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
+                  Start
+                </p>
+                <p className="mt-2 text-xl font-semibold">
+                  {formatDayClock(raceStart)}
+                </p>
+                <p className="mt-1 text-sm text-slate-300">
+                  Moot Hall, Keswick
+                </p>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
+                  Cutoff
+                </p>
+                <p className="mt-2 text-xl font-semibold">
+                  {formatDayClock(raceCutoff)}
+                </p>
+                <p className="mt-1 text-sm text-slate-300">
+                  24-hour round limit
+                </p>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
+                  Plan
+                </p>
+                <p className="mt-2 text-xl font-semibold">
+                  {formatDuration(1317)}
+                </p>
+                <p className="mt-1 text-sm text-slate-300">
+                  22-hour schedule with margin
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            <article className={statCardClass}>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
+                Next crew point
+              </p>
+              <h2 className="mt-3 text-3xl font-semibold text-slate-950">
+                {nextCrewPoint.title}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {nextCrewPoint.detail}
+              </p>
+            </article>
+            <article className={statCardClass}>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-pink-700">
+                Route completion
+              </p>
+              <h2 className="mt-3 text-3xl font-semibold text-slate-950">
+                {getRouteCompletion(now)}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Progress is currently plan-based until tracker checkpoint
+                ingestion is added.
+              </p>
+            </article>
+            <article className={statCardClass}>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
+                Tracker status
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-950">
+                Embed ready
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Actual arrival times will populate from the live tracker once
+                the parser layer is wired.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+          <article className={`${statCardClass} overflow-hidden`}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
+                  Live tracker
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                  Map and event feed
+                </h2>
+              </div>
+              <a
+                className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+                href={trackerUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open tracker
+              </a>
+            </div>
+            <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-100">
+              <iframe
+                title="Trail Live tracker"
+                src={trackerUrl}
+                className="h-[480px] w-full"
+              />
+            </div>
+          </article>
+
+          <div className="grid gap-4">
+            <article className={statCardClass}>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">
+                Upcoming on plan
+              </p>
+              <div className="mt-4 space-y-3">
+                {upcomingCheckpoints.map((checkpoint) => (
+                  <div
+                    key={checkpoint.id}
+                    className="flex items-center justify-between gap-4 rounded-2xl bg-slate-100/80 px-4 py-3"
+                  >
+                    <div>
+                      <p className="font-semibold text-slate-900">
+                        {checkpoint.name}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        Leg {checkpoint.leg}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-slate-900">
+                        {formatClock(getPlannedArrival(checkpoint))}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        +{formatDuration(checkpoint.cumulativeMinutes)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className={statCardClass}>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-700">
+                Pacers by leg
+              </p>
+              <div className="mt-4 grid gap-3">
+                {pacerLegs.map((leg) => (
+                  <div
+                    key={leg.leg}
+                    className="rounded-2xl bg-slate-100/80 p-4"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-lg font-semibold text-slate-900">
+                        Leg {leg.leg}
+                      </h3>
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
+                        {leg.pacers.length} pacers
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-700">
+                      {leg.pacers.join(" • ")}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section className="grid gap-4 lg:grid-cols-2">
+          <article className={statCardClass}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
+                  Fell tops
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                  ETA and actual arrival
+                </h2>
+              </div>
+              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
+                {summitCheckpoints.length} tops
+              </span>
+            </div>
+
+            <div className="mt-4 max-h-[720px] space-y-3 overflow-y-auto pr-1">
+              {summitCheckpoints.map((checkpoint) => (
+                <div
+                  key={checkpoint.id}
+                  className="rounded-2xl border border-slate-200 bg-white p-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-semibold text-slate-900">
+                        {checkpoint.name}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-600">
+                        Leg {checkpoint.leg}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-700">
+                      {getCheckpointStatus(checkpoint, now)}
+                    </span>
+                  </div>
+                  <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+                    <div className="rounded-2xl bg-slate-100/80 p-3">
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                        ETA
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        {formatClock(getPlannedArrival(checkpoint))}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl bg-slate-100/80 p-3">
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                        Actual
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        {checkpoint.actualArrival ?? "Waiting for tracker"}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl bg-slate-100/80 p-3">
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                        Elapsed
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        {formatDuration(checkpoint.cumulativeMinutes)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className={statCardClass}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-pink-700">
+                  Changeovers and roads
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                  Crew timing panel
+                </h2>
+              </div>
+              <span className="rounded-full bg-pink-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-pink-700">
+                {crewPoints.length} major crew points
+              </span>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {crewPoints.map((checkpoint) => {
+                const location = changeoverLocations.find(
+                  (item) => item.name === checkpoint.name
+                );
+
+                return (
+                  <div
+                    key={checkpoint.id}
+                    className="rounded-2xl border border-slate-200 bg-white p-4"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold text-slate-900">
+                          {checkpoint.name}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-600">
+                          ETA {formatClock(getPlannedArrival(checkpoint))}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-700">
+                        {location?.w3w ?? "Mapped point"}
+                      </span>
+                    </div>
+                    <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                      <div className="rounded-2xl bg-slate-100/80 p-3">
+                        <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                          Arrival status
+                        </p>
+                        <p className="mt-1 font-semibold text-slate-900">
+                          {checkpoint.actualArrival ?? "Waiting for tracker"}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-slate-100/80 p-3">
+                        <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                          Crew note
+                        </p>
+                        <p className="mt-1 text-slate-700">
+                          {location?.notes ?? "Roadside access note pending."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </article>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+          <article className={statCardClass}>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-700">
+              Weather snapshots
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+              Open-Meteo crew points
+            </h2>
+            <div className="mt-4 grid gap-3">
+              {weather.map((forecast) => (
+                <div
+                  key={forecast.name}
+                  className="rounded-2xl bg-slate-100/80 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-semibold text-slate-900">
+                      {forecast.name}
+                    </h3>
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
+                      {describeWeatherCode(forecast.weatherCode)}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                        Temp
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        {forecast.temperature === null
+                          ? "--"
+                          : `${Math.round(forecast.temperature)}°C`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                        Feels
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        {forecast.apparentTemperature === null
+                          ? "--"
+                          : `${Math.round(forecast.apparentTemperature)}°C`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                        Wind
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        {forecast.windSpeed === null
+                          ? "--"
+                          : `${Math.round(forecast.windSpeed)} km/h`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                        Rain
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900">
+                        {forecast.precipitationProbability === null
+                          ? "--"
+                          : `${Math.round(forecast.precipitationProbability)}%`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <section>
+            <div className="mb-4 flex items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
+                  Crew note board
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                  Runner instructions and live crew notes
+                </h2>
+              </div>
+              <p className="max-w-sm text-right text-sm leading-6 text-slate-600">
+                Shared persistence is planned next. This first slice keeps the
+                note flow visible and usable in the meantime.
+              </p>
+            </div>
+            <ChangeoverNotes locations={changeoverLocations} />
+          </section>
+        </section>
+
+        <section
+          className={`${statCardClass} flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
+        >
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+              Data coverage
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              Loaded {checkpoints.length} route checkpoints,{" "}
+              {changeoverLocations.length} crew locations, and{" "}
+              {pacerLegs.length} pacer legs from the published planning sheet.
+            </p>
+          </div>
+          <div className="text-sm text-slate-600">
+            Tracker ingestion and shared notes database are the next
+            implementation slices.
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }
