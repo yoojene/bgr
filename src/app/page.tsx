@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { ChangeoverNotes } from "@/components/changeover-notes";
 import {
   changeoverLocations,
@@ -39,7 +41,7 @@ export default async function Home() {
       <div className="absolute inset-x-0 top-0 -z-10 h-96 bg-[radial-gradient(circle_at_20%_20%,rgba(251,191,36,0.35),transparent_26%),radial-gradient(circle_at_80%_15%,rgba(236,72,153,0.22),transparent_20%),radial-gradient(circle_at_55%_0%,rgba(34,197,94,0.18),transparent_18%)]" />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
         <section className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
-          <div className="rounded-[2rem] bg-slate-950 px-6 py-7 text-white shadow-[0_24px_90px_rgba(15,23,42,0.28)]">
+          <div className="overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-7 text-white shadow-[0_24px_90px_rgba(15,23,42,0.28)]">
             <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.32em] text-sky-200/90">
               <span>Bob Graham Round</span>
               <span className="rounded-full border border-white/15 px-3 py-1 text-[11px] tracking-[0.25em] text-white/80">
@@ -47,23 +49,58 @@ export default async function Home() {
               </span>
             </div>
 
-            <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div>
+            <div className="mt-4 grid gap-6 xl:grid-cols-[1fr_340px] xl:items-start">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between xl:block">
+                <div>
                 <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
                   Eugene&apos;s Bob Graham Round
                 </h1>
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                    Live timings, tracker access, crew notes, pacers, and weather in one race-day view.
+                  </p>
+                </div>
+
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/8 px-5 py-4 backdrop-blur xl:mt-6 xl:max-w-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-200">
+                    {countdown.label}
+                  </p>
+                  <p className="mt-2 text-3xl font-semibold text-white">
+                    {countdown.value}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-300">
+                    {countdown.detail}
+                  </p>
+                </div>
               </div>
 
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/8 px-5 py-4 backdrop-blur">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-200">
-                  {countdown.label}
-                </p>
-                <p className="mt-2 text-3xl font-semibold text-white">
-                  {countdown.value}
-                </p>
-                <p className="mt-1 text-sm text-slate-300">
-                  {countdown.detail}
-                </p>
+              <div className="relative mx-auto hidden w-full max-w-[340px] xl:block">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900 shadow-[0_24px_80px_rgba(2,8,23,0.42)]">
+                  <Image
+                    src="/IMG_5136.JPG"
+                    alt="View across the Bob Graham fells with dramatic cloud and rocky foreground"
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="340px"
+                  />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.06)_0%,rgba(15,23,42,0.12)_55%,rgba(15,23,42,0.38)_100%)]" />
+                </div>
+
+                <div className="absolute -bottom-8 -left-10 w-[58%] rotate-[-7deg] overflow-hidden rounded-[1.5rem] border-4 border-white bg-white shadow-[0_18px_50px_rgba(15,23,42,0.35)]">
+                  <div className="relative aspect-[4/3]">
+                    <Image
+                      src="/eef0cbf4-ed1d-4c69-b295-7a618e2f772e.JPG"
+                      alt="Descending rocky fellside with lake and valley views"
+                      fill
+                      className="object-cover"
+                      sizes="200px"
+                    />
+                  </div>
+                </div>
+
+                <div className="absolute right-4 top-4 rounded-full border border-white/20 bg-slate-950/55 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-white/90 backdrop-blur">
+                  On the fells
+                </div>
               </div>
             </div>
 
