@@ -52,11 +52,6 @@ export default async function Home() {
                 <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
                   Eugene&apos;s Bob Graham Round
                 </h1>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-                  Mobile-first race-day view for tracker access, summit ETAs,
-                  changeover timing, pacers, weather, and crew prep from Moot
-                  Hall to Moot Hall.
-                </p>
               </div>
 
               <div className="rounded-[1.5rem] border border-white/10 bg-white/8 px-5 py-4 backdrop-blur">
@@ -160,7 +155,7 @@ export default async function Home() {
                 </h2>
               </div>
               <a
-                className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+                className="rounded-full border border-sky-200 bg-sky-100 px-4 py-2 text-sm font-semibold text-sky-950 transition hover:border-sky-300 hover:bg-sky-200"
                 href={trackerUrl}
                 target="_blank"
                 rel="noreferrer"
@@ -338,9 +333,20 @@ export default async function Home() {
                           ETA {formatClock(getPlannedArrival(checkpoint))}
                         </p>
                       </div>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-700">
-                        {location?.w3w ?? "Mapped point"}
-                      </span>
+                      {location?.w3w ? (
+                        <a
+                          className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-amber-950 underline decoration-amber-500 decoration-2 underline-offset-3 transition hover:border-amber-300 hover:bg-amber-200"
+                          href={`https://what3words.com/${location.w3w.replace(/^\/\/\//, "")}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {location.w3w}
+                        </a>
+                      ) : (
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-700">
+                          Mapped point
+                        </span>
+                      )}
                     </div>
                     <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                       <div className="rounded-2xl bg-slate-100/80 p-3">
@@ -373,7 +379,7 @@ export default async function Home() {
               Weather snapshots
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-              Open-Meteo crew points
+              Weather Forecast
             </h2>
             <div className="mt-4 grid gap-3">
               {weather.map((forecast) => (
