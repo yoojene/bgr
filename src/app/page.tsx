@@ -146,7 +146,9 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-            <article className={`${statCardClass} border-sky-200/80 bg-sky-50/90`}>
+            <article
+              className={`${statCardClass} border-sky-200/80 bg-sky-50/90`}
+            >
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
                 Next crew point
               </p>
@@ -157,7 +159,9 @@ export default async function Home() {
                 {nextCrewPoint.detail}
               </p>
             </article>
-            <article className={`${statCardClass} border-pink-200/80 bg-pink-50/90`}>
+            <article
+              className={`${statCardClass} border-pink-200/80 bg-pink-50/90`}
+            >
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-pink-700">
                 Route completion
               </p>
@@ -169,7 +173,9 @@ export default async function Home() {
                 ingestion is added.
               </p>
             </article>
-            <article className={`${statCardClass} border-emerald-200/80 bg-emerald-50/90`}>
+            <article
+              className={`${statCardClass} border-emerald-200/80 bg-emerald-50/90`}
+            >
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
                 Tracker status
               </p>
@@ -185,7 +191,9 @@ export default async function Home() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <article className={`${sectionCardClass} overflow-hidden border-sky-200/80 bg-sky-50/90`}>
+          <article
+            className={`${sectionCardClass} overflow-hidden border-sky-200/80 bg-sky-50/90`}
+          >
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
@@ -214,7 +222,9 @@ export default async function Home() {
           </article>
 
           <div className="grid gap-4">
-            <article className={`${sectionCardClass} border-amber-200/80 bg-amber-50/90`}>
+            <article
+              className={`${sectionCardClass} border-amber-200/80 bg-amber-50/90`}
+            >
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">
                 Upcoming on plan
               </p>
@@ -245,7 +255,9 @@ export default async function Home() {
               </div>
             </article>
 
-            <article className={`${sectionCardClass} border-violet-200/80 bg-violet-50/90`}>
+            <article
+              className={`${sectionCardClass} border-violet-200/80 bg-violet-50/90`}
+            >
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-700">
                 Pacers by leg
               </p>
@@ -274,7 +286,9 @@ export default async function Home() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <article className={`${sectionCardClass} border-emerald-200/80 bg-emerald-50/90`}>
+          <article
+            className={`${sectionCardClass} border-emerald-200/80 bg-emerald-50/90`}
+          >
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
@@ -339,7 +353,9 @@ export default async function Home() {
             </div>
           </article>
 
-          <article className={`${sectionCardClass} border-rose-200/80 bg-rose-50/90`}>
+          <article
+            className={`${sectionCardClass} border-rose-200/80 bg-rose-50/90`}
+          >
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-pink-700">
@@ -415,7 +431,9 @@ export default async function Home() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
-          <article className={`${sectionCardClass} border-cyan-200/80 bg-cyan-50/90`}>
+          <article
+            className={`${sectionCardClass} border-cyan-200/80 bg-cyan-50/90`}
+          >
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-700">
               Weather snapshots
             </p>
