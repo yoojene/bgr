@@ -1,3 +1,14 @@
+import {
+  Cloud,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSun,
+  CrosshairSimple,
+  Drop,
+  Snowflake,
+  Sun,
+} from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -30,6 +41,42 @@ const statCardClass =
 
 const sectionCardClass =
   "rounded-[1.75rem] border p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur";
+
+function getWeatherConditionIcon(code: number | null) {
+  if (code === null) {
+    return <Cloud size={14} weight="bold" aria-hidden="true" />;
+  }
+
+  if (code === 0) {
+    return <Sun size={14} weight="bold" aria-hidden="true" />;
+  }
+
+  if ([1, 2, 3].includes(code)) {
+    return <CloudSun size={14} weight="bold" aria-hidden="true" />;
+  }
+
+  if ([45, 48].includes(code)) {
+    return <CloudFog size={14} weight="bold" aria-hidden="true" />;
+  }
+
+  if ([51, 53, 55, 56, 57].includes(code)) {
+    return <Drop size={14} weight="bold" aria-hidden="true" />;
+  }
+
+  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) {
+    return <CloudRain size={14} weight="bold" aria-hidden="true" />;
+  }
+
+  if ([71, 73, 75, 77].includes(code)) {
+    return <Snowflake size={14} weight="bold" aria-hidden="true" />;
+  }
+
+  if ([95, 96, 99].includes(code)) {
+    return <CloudLightning size={14} weight="bold" aria-hidden="true" />;
+  }
+
+  return <Cloud size={14} weight="bold" aria-hidden="true" />;
+}
 
 export default async function Home() {
   const now = new Date();
@@ -92,9 +139,6 @@ export default async function Home() {
             <div className="pr-16 sm:pr-20">
               <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.32em] text-sky-200/90">
                 <span>Bob Graham Round</span>
-                <span className="rounded-full border border-white/15 px-3 py-1 text-[11px] tracking-[0.25em] text-white/80">
-                  Crew dashboard
-                </span>
               </div>
             </div>
 
@@ -193,6 +237,34 @@ export default async function Home() {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
             <article
+              className={`${sectionCardClass} overflow-hidden border-sky-200/80 bg-sky-50/90`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
+                    Live tracker
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-950"></h2>
+                </div>
+                <a
+                  className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-100 px-4 py-2 text-sm font-semibold text-sky-950 transition hover:border-sky-300 hover:bg-sky-200"
+                  href={trackerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <CrosshairSimple size={16} weight="bold" aria-hidden="true" />
+                  Open tracker
+                </a>
+              </div>
+              <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-100">
+                <iframe
+                  title="Trail Live tracker"
+                  src={trackerUrl}
+                  className="h-[480px] w-full"
+                />
+              </div>
+            </article>
+            <article
               className={`${statCardClass} border-sky-200/80 bg-sky-50/90`}
             >
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
@@ -237,36 +309,6 @@ export default async function Home() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <article
-            className={`${sectionCardClass} overflow-hidden border-sky-200/80 bg-sky-50/90`}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
-                  Live tracker
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-                  Map and event feed
-                </h2>
-              </div>
-              <a
-                className="rounded-full border border-sky-200 bg-sky-100 px-4 py-2 text-sm font-semibold text-sky-950 transition hover:border-sky-300 hover:bg-sky-200"
-                href={trackerUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open tracker
-              </a>
-            </div>
-            <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-100">
-              <iframe
-                title="Trail Live tracker"
-                src={trackerUrl}
-                className="h-[480px] w-full"
-              />
-            </div>
-          </article>
-
           <div className="grid gap-4">
             <article
               className={`${sectionCardClass} border-amber-200/80 bg-amber-50/90`}
@@ -296,34 +338,6 @@ export default async function Home() {
                         +{formatDuration(checkpoint.cumulativeMinutes)}
                       </p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article
-              className={`${sectionCardClass} border-violet-200/80 bg-violet-50/90`}
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-700">
-                Pacers by leg
-              </p>
-              <div className="mt-4 grid gap-3">
-                {pacerLegs.map((leg) => (
-                  <div
-                    key={leg.leg}
-                    className="rounded-2xl border border-violet-100 bg-violet-100/75 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <h3 className="text-lg font-semibold text-slate-900">
-                        Leg {leg.leg}
-                      </h3>
-                      <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
-                        {leg.pacers.length} pacers
-                      </span>
-                    </div>
-                    <p className="mt-3 text-sm leading-6 text-slate-700">
-                      {leg.pacers.join(" • ")}
-                    </p>
                   </div>
                 ))}
               </div>
@@ -400,78 +414,30 @@ export default async function Home() {
           </article>
 
           <article
-            className={`${sectionCardClass} border-rose-200/80 bg-rose-50/90`}
+            className={`${sectionCardClass} border-violet-200/80 bg-violet-50/90`}
           >
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-pink-700">
-                  Changeovers and roads
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-                  Crew timing panel
-                </h2>
-              </div>
-              <span className="rounded-full bg-pink-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-pink-700">
-                {crewPoints.length} major crew points
-              </span>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {crewPoints.map((checkpoint) => {
-                const location = changeoverLocations.find(
-                  (item) => item.name === checkpoint.name
-                );
-
-                return (
-                  <div
-                    key={checkpoint.id}
-                    className="rounded-2xl border border-rose-100 bg-white/90 p-4"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <h3 className="font-semibold text-slate-900">
-                          {checkpoint.name}
-                        </h3>
-                        <p className="mt-1 text-sm text-slate-600">
-                          ETA {formatClock(getPlannedArrival(checkpoint))}
-                        </p>
-                      </div>
-                      {location?.w3w ? (
-                        <a
-                          className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-xs font-semibold tracking-[0.18em] text-amber-950 underline decoration-amber-500 decoration-2 underline-offset-3 transition hover:border-amber-300 hover:bg-amber-200"
-                          href={`https://what3words.com/${location.w3w.replace(/^\/\/\//, "")}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {location.w3w}
-                        </a>
-                      ) : (
-                        <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-rose-800">
-                          Mapped point
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                      <div className="rounded-2xl bg-rose-100/75 p-3">
-                        <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                          Arrival status
-                        </p>
-                        <p className="mt-1 font-semibold text-slate-900">
-                          {checkpoint.actualArrival ?? "Waiting for tracker"}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl bg-rose-100/75 p-3">
-                        <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                          Crew note
-                        </p>
-                        <p className="mt-1 text-slate-700">
-                          {location?.notes ?? "Roadside access note pending."}
-                        </p>
-                      </div>
-                    </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-700">
+              Pacers by leg
+            </p>
+            <div className="mt-4 grid gap-3">
+              {pacerLegs.map((leg) => (
+                <div
+                  key={leg.leg}
+                  className="rounded-2xl border border-violet-100 bg-violet-100/75 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      Leg {leg.leg}
+                    </h3>
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
+                      {leg.pacers.length} pacers
+                    </span>
                   </div>
-                );
-              })}
+                  <p className="mt-3 text-sm leading-6 text-slate-700">
+                    {leg.pacers.join(" • ")}
+                  </p>
+                </div>
+              ))}
             </div>
           </article>
         </section>
@@ -481,11 +447,9 @@ export default async function Home() {
             className={`${sectionCardClass} border-cyan-200/80 bg-cyan-50/90`}
           >
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-700">
-              Weather snapshots
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
               Weather Forecast
-            </h2>
+            </p>
+
             <div className="mt-4 grid gap-3">
               {weather.map((forecast) => (
                 <div
@@ -496,7 +460,8 @@ export default async function Home() {
                     <h3 className="font-semibold text-slate-900">
                       {forecast.name}
                     </h3>
-                    <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-800">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-800">
+                      {getWeatherConditionIcon(forecast.weatherCode)}
                       {describeWeatherCode(forecast.weatherCode)}
                     </span>
                   </div>
