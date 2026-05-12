@@ -1,12 +1,13 @@
 import Image from "next/image";
+import Link from "next/link";
 
-import { ChangeoverNotes } from "@/components/changeover-notes";
 import {
   changeoverLocations,
   checkpoints,
   pacerLegs,
   trackerUrl,
 } from "@/data/bgr-data";
+import { getDefaultChangeoverSlug } from "@/lib/changeovers";
 import {
   formatClock,
   formatDayClock,
@@ -38,6 +39,7 @@ export default async function Home() {
   const summitCheckpoints = getSummits();
   const crewPoints = getCrewPoints();
   const weather = await getWeatherSummaries();
+  const defaultChangeoverSlug = getDefaultChangeoverSlug(now);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.24),_transparent_22%),radial-gradient(circle_at_top_right,_rgba(244,114,182,0.22),_transparent_18%),linear-gradient(180deg,_#fff8ef_0%,_#f8fbff_38%,_#eef6ff_100%)] pb-20 text-slate-900">
@@ -508,15 +510,43 @@ export default async function Home() {
                   Crew note board
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-                  Runner instructions and live crew notes
+                  Dedicated changeover notes
                 </h2>
               </div>
               <p className="max-w-sm text-right text-sm leading-6 text-slate-600">
-                Shared persistence is planned next. This first slice keeps the
-                note flow visible and usable in the meantime.
+                Open the focused changeover page for runner instructions, crew
+                note entry, and previous or next checkpoint navigation.
               </p>
             </div>
-            <ChangeoverNotes locations={changeoverLocations} />
+
+            <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+              <div className="rounded-[1.5rem] border border-sky-100 bg-white/85 p-5">
+                <p className="text-sm leading-7 text-slate-700">
+                  The dashboard now stays focused on tracker, timing, pacers,
+                  and weather. Changeover instructions and live crew notes are
+                  handled on their own page so the crew can move checkpoint to
+                  checkpoint with simple previous and next controls.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-sky-800">
+                  <span className="rounded-full bg-sky-100 px-3 py-1">
+                    Runner notes
+                  </span>
+                  <span className="rounded-full bg-sky-100 px-3 py-1">
+                    Crew entry
+                  </span>
+                  <span className="rounded-full bg-sky-100 px-3 py-1">
+                    LTR nav
+                  </span>
+                </div>
+              </div>
+
+              <Link
+                href={`/changeovers/${defaultChangeoverSlug}`}
+                className="inline-flex items-center justify-center rounded-full border border-sky-200 bg-sky-100 px-5 py-3 text-sm font-semibold text-sky-950 transition hover:border-sky-300 hover:bg-sky-200"
+              >
+                Open changeover page
+              </Link>
+            </div>
           </section>
         </section>
 
