@@ -384,10 +384,10 @@ export default async function Home() {
               <h2 className="mt-3 text-3xl font-semibold text-slate-950">
                 {getRouteCompletion(now)}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              {/* <p className="mt-2 text-sm leading-6 text-slate-600">
                 Progress is currently plan-based until tracker checkpoint
                 ingestion is added.
-              </p>
+              </p> */}
             </article>
           </div>
         </section>
@@ -597,7 +597,7 @@ export default async function Home() {
           </article>
         </section>
 
-        <section
+        {/* <section
           className={`${sectionCardClass} flex flex-col gap-3 border-slate-200/80 bg-slate-100/80 sm:flex-row sm:items-center sm:justify-between`}
         >
           <div>
@@ -614,7 +614,7 @@ export default async function Home() {
             Tracker ingestion and shared notes database are the next
             implementation slices.
           </div>
-        </section>
+        </section> */}
       </div>
     </main>
   );
