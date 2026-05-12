@@ -22,13 +22,13 @@ export function WebcamCarousel({ webcams, className }: Props) {
 
   function goPrevious() {
     setActiveIndex((current) =>
-      current === 0 ? webcams.length - 1 : current - 1,
+      current === 0 ? webcams.length - 1 : current - 1
     );
   }
 
   function goNext() {
     setActiveIndex((current) =>
-      current === webcams.length - 1 ? 0 : current + 1,
+      current === webcams.length - 1 ? 0 : current + 1
     );
   }
 
@@ -37,7 +37,7 @@ export function WebcamCarousel({ webcams, className }: Props) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
-            Mountain webcams
+            Webcams
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">
             {activeWebcam.title}
@@ -65,7 +65,9 @@ export function WebcamCarousel({ webcams, className }: Props) {
 
       <div className="mt-3 flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-slate-900">{activeWebcam.name}</p>
+          <p className="text-sm font-semibold text-slate-900">
+            {activeWebcam.name}
+          </p>
           <p className="mt-1 text-sm leading-6 text-slate-600">
             {activeWebcam.description}
           </p>
