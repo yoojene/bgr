@@ -433,16 +433,16 @@ export default async function Home() {
                       {leg.pacers.length} pacers
                     </span>
                   </div>
-                    <div className="mt-3 grid gap-2">
-                      {leg.pacers.map((pacer) => (
-                        <div
-                          key={pacer}
-                          className="rounded-xl border border-violet-200/80 bg-white/90 px-3 py-2 text-sm font-semibold leading-6 text-slate-900 shadow-[0_8px_20px_rgba(76,29,149,0.06)]"
-                        >
-                          {pacer}
-                        </div>
-                      ))}
-                    </div>
+                  <div className="mt-3 grid gap-2">
+                    {leg.pacers.map((pacer) => (
+                      <div
+                        key={pacer}
+                        className="rounded-xl border border-violet-200/80 bg-white/90 px-3 py-2 text-sm font-semibold leading-6 text-slate-900 shadow-[0_8px_20px_rgba(76,29,149,0.06)]"
+                      >
+                        {pacer}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
