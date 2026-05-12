@@ -357,6 +357,7 @@ export default async function Home() {
                   title="Trail Live tracker"
                   src={trackerUrl}
                   className="h-[480px] w-full"
+                  allow="geolocation"
                 />
               </div>
             </article>
