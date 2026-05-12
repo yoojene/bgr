@@ -1,14 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import type { ChangeoverLocation } from "@/data/bgr-data";
 
 type Props = {
   location: ChangeoverLocation;
-  etaLabel?: string | null;
-  actualArrival?: string | null;
 };
 
 type NoteStatus = "idle" | "saving" | "saved" | "error";
@@ -19,7 +16,7 @@ type SharedNote = {
   updatedAt: string | null;
 };
 
-export function ChangeoverNotes({ location, etaLabel, actualArrival }: Props) {
+export function ChangeoverNotes({ location }: Props) {
   const [crewNote, setCrewNote] = useState<string>(
     typeof window === "undefined"
       ? ""
@@ -96,67 +93,20 @@ export function ChangeoverNotes({ location, etaLabel, actualArrival }: Props) {
 
   return (
     <article className="rounded-[1.75rem] border border-white/60 bg-white/85 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
-            Changeover notes
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-            {location.name}
-          </h2>
+      <dl className="grid gap-4 text-sm text-slate-700 lg:grid-cols-2">
+        <div className="rounded-[1.5rem] border border-sky-200 bg-sky-50/90 p-5 shadow-[0_12px_35px_rgba(14,165,233,0.12)]">
+          <dt className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+            Runner note
+          </dt>
+          <dd className="mt-3 text-base font-medium leading-7 text-slate-900">
+            {location.runnerNote}
+          </dd>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <Link
-            className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-950 transition hover:border-amber-300 hover:bg-amber-200"
-            href={`https://what3words.com/${location.w3w.replace(/^\/\/\//, "")}`}
-            target="_blank"
-          >
-            Open W3W
-          </Link>
-          <a
-            className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-950 transition hover:border-amber-300 hover:bg-amber-200"
-            href={location.mapsUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Open map
-          </a>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-        <div className="rounded-2xl bg-slate-100/80 p-3">
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-            ETA
-          </p>
-          <p className="mt-1 font-semibold text-slate-900">
-            {etaLabel ?? "Optional stop"}
-          </p>
-        </div>
-        <div className="rounded-2xl bg-slate-100/80 p-3">
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-            Actual
-          </p>
-          <p className="mt-1 font-semibold text-slate-900">
-            {actualArrival ?? "Waiting for tracker"}
-          </p>
-        </div>
-        <div className="rounded-2xl bg-slate-100/80 p-3">
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-            What3words
-          </p>
-          <p className="mt-1 font-semibold text-slate-900">{location.w3w}</p>
-        </div>
-      </div>
-
-      <dl className="mt-4 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
-        <div className="rounded-2xl bg-slate-100/80 p-3">
-          <dt className="font-semibold text-slate-900">Runner note</dt>
-          <dd className="mt-1 leading-6">{location.runnerNote}</dd>
-        </div>
-        <div className="rounded-2xl bg-slate-100/80 p-3">
-          <dt className="font-semibold text-slate-900">Crew logistics</dt>
-          <dd className="mt-1 whitespace-pre-line leading-6">
+        <div className="rounded-[1.5rem] border border-rose-200 bg-rose-50/90 p-5 shadow-[0_12px_35px_rgba(244,63,94,0.12)]">
+          <dt className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-700">
+            Crew logistics
+          </dt>
+          <dd className="mt-3 whitespace-pre-line text-base leading-7 text-slate-900">
             {location.notes}
           </dd>
         </div>

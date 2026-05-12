@@ -1,3 +1,4 @@
+import { CaretLeft, MapPinLine, MapTrifold } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -31,19 +32,36 @@ export default async function ChangeoverPage({ params }: PageProps) {
         <section className="overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-7 text-white shadow-[0_24px_90px_rgba(15,23,42,0.28)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-sky-200/90">
-                Changeover notes
-              </p>
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.32em] text-sky-200/90 transition hover:text-white"
+              >
+                <CaretLeft size={16} weight="bold" aria-hidden="true" />
+                Back to dashboard
+              </Link>
               <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
                 {entry.location.name}
               </h1>
             </div>
-            <Link
-              href="/"
-              className="rounded-full border border-white/15 bg-white/8 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/14"
-            >
-              Back to dashboard
-            </Link>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Link
+                className="inline-flex items-center gap-2 rounded-full border border-amber-200/30 bg-amber-200/10 px-3 py-1.5 text-xs font-semibold text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-200/20 hover:text-white"
+                href={`https://what3words.com/${entry.location.w3w.replace(/^\/\/\//, "")}`}
+                target="_blank"
+              >
+                <MapPinLine size={14} weight="bold" aria-hidden="true" />
+                Open W3W
+              </Link>
+              <a
+                className="inline-flex items-center gap-2 rounded-full border border-amber-200/30 bg-amber-200/10 px-3 py-1.5 text-xs font-semibold text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-200/20 hover:text-white"
+                href={entry.location.mapsUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MapTrifold size={14} weight="bold" aria-hidden="true" />
+                Open map
+              </a>
+            </div>
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
@@ -83,15 +101,9 @@ export default async function ChangeoverPage({ params }: PageProps) {
           </div>
         </section>
 
-        <ChangeoverNav previous={adjacent.previous} next={adjacent.next} />
+        <ChangeoverNotes location={entry.location} />
 
-        <ChangeoverNotes
-          location={entry.location}
-          etaLabel={
-            plannedArrival ? formatClock(plannedArrival) : "Optional stop"
-          }
-          actualArrival={entry.checkpoint?.actualArrival ?? null}
-        />
+        <ChangeoverNav previous={adjacent.previous} next={adjacent.next} />
       </div>
     </main>
   );

@@ -7,7 +7,7 @@ import {
   pacerLegs,
   trackerUrl,
 } from "@/data/bgr-data";
-import { getDefaultChangeoverSlug } from "@/lib/changeovers";
+import { changeoverEntries } from "@/lib/changeovers";
 import {
   formatClock,
   formatDayClock,
@@ -39,19 +39,63 @@ export default async function Home() {
   const summitCheckpoints = getSummits();
   const crewPoints = getCrewPoints();
   const weather = await getWeatherSummaries();
-  const defaultChangeoverSlug = getDefaultChangeoverSlug(now);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.24),_transparent_22%),radial-gradient(circle_at_top_right,_rgba(244,114,182,0.22),_transparent_18%),linear-gradient(180deg,_#fff8ef_0%,_#f8fbff_38%,_#eef6ff_100%)] pb-20 text-slate-900">
       <div className="absolute inset-x-0 top-0 -z-10 h-96 bg-[radial-gradient(circle_at_20%_20%,rgba(251,191,36,0.35),transparent_26%),radial-gradient(circle_at_80%_15%,rgba(236,72,153,0.22),transparent_20%),radial-gradient(circle_at_55%_0%,rgba(34,197,94,0.18),transparent_18%)]" />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
         <section className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
-          <div className="overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-7 text-white shadow-[0_24px_90px_rgba(15,23,42,0.28)]">
-            <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.32em] text-sky-200/90">
-              <span>Bob Graham Round</span>
-              <span className="rounded-full border border-white/15 px-3 py-1 text-[11px] tracking-[0.25em] text-white/80">
-                Crew dashboard
-              </span>
+          <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-7 text-white shadow-[0_24px_90px_rgba(15,23,42,0.28)]">
+            <details className="group absolute right-6 top-6 z-20 shrink-0">
+              <summary className="flex list-none cursor-pointer items-center justify-center rounded-2xl border border-white/15 bg-white/8 p-3 text-white/90 transition hover:bg-white/14 [&::-webkit-details-marker]:hidden">
+                <span className="sr-only">Open crew points menu</span>
+                <span className="flex h-5 w-5 flex-col justify-between">
+                  <span className="block h-0.5 rounded-full bg-current" />
+                  <span className="block h-0.5 rounded-full bg-current" />
+                  <span className="block h-0.5 rounded-full bg-current" />
+                </span>
+              </summary>
+
+              <div className="absolute right-0 top-full z-20 mt-3 w-72 overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-950/96 p-3 shadow-[0_24px_80px_rgba(2,8,23,0.48)] backdrop-blur">
+                <p className="px-3 pt-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-200/80">
+                  Crew points
+                </p>
+                <div className="mt-2 grid gap-2">
+                  {changeoverEntries.map((entry) => {
+                    const checkpoint = crewPoints.find(
+                      (item) => item.name === entry.location.name,
+                    );
+
+                    return (
+                      <Link
+                        key={entry.slug}
+                        href={`/changeovers/${entry.slug}`}
+                        className="rounded-2xl border border-white/8 bg-white/6 px-3 py-3 text-left transition hover:border-sky-300/30 hover:bg-sky-400/10"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-sm font-semibold text-white">
+                            {entry.location.name}
+                          </span>
+                          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-200/80">
+                            {checkpoint
+                              ? formatClock(getPlannedArrival(checkpoint))
+                              : "Stop"}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </details>
+
+            <div className="pr-16 sm:pr-20">
+              <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.32em] text-sky-200/90">
+                <span>Bob Graham Round</span>
+                <span className="rounded-full border border-white/15 px-3 py-1 text-[11px] tracking-[0.25em] text-white/80">
+                  Crew dashboard
+                </span>
+              </div>
             </div>
 
             <div className="mt-4 grid gap-6 xl:grid-cols-[1fr_340px] xl:items-start">
@@ -432,7 +476,7 @@ export default async function Home() {
           </article>
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+        <section>
           <article
             className={`${sectionCardClass} border-cyan-200/80 bg-cyan-50/90`}
           >
@@ -502,52 +546,6 @@ export default async function Home() {
               ))}
             </div>
           </article>
-
-          <section className="rounded-[1.75rem] border border-sky-200/80 bg-sky-50/60 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur">
-            <div className="mb-4 flex items-end justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
-                  Crew note board
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-                  Dedicated changeover notes
-                </h2>
-              </div>
-              <p className="max-w-sm text-right text-sm leading-6 text-slate-600">
-                Open the focused changeover page for runner instructions, crew
-                note entry, and previous or next checkpoint navigation.
-              </p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
-              <div className="rounded-[1.5rem] border border-sky-100 bg-white/85 p-5">
-                <p className="text-sm leading-7 text-slate-700">
-                  The dashboard now stays focused on tracker, timing, pacers,
-                  and weather. Changeover instructions and live crew notes are
-                  handled on their own page so the crew can move checkpoint to
-                  checkpoint with simple previous and next controls.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-sky-800">
-                  <span className="rounded-full bg-sky-100 px-3 py-1">
-                    Runner notes
-                  </span>
-                  <span className="rounded-full bg-sky-100 px-3 py-1">
-                    Crew entry
-                  </span>
-                  <span className="rounded-full bg-sky-100 px-3 py-1">
-                    LTR nav
-                  </span>
-                </div>
-              </div>
-
-              <Link
-                href={`/changeovers/${defaultChangeoverSlug}`}
-                className="inline-flex items-center justify-center rounded-full border border-sky-200 bg-sky-100 px-5 py-3 text-sm font-semibold text-sky-950 transition hover:border-sky-300 hover:bg-sky-200"
-              >
-                Open changeover page
-              </Link>
-            </div>
-          </section>
         </section>
 
         <section
