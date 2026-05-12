@@ -291,20 +291,6 @@ export default async function Home() {
                 ingestion is added.
               </p>
             </article>
-            <article
-              className={`${statCardClass} border-emerald-200/80 bg-emerald-50/90`}
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
-                Tracker status
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold text-slate-950">
-                Embed ready
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Actual arrival times will populate from the live tracker once
-                the parser layer is wired.
-              </p>
-            </article>
           </div>
         </section>
 

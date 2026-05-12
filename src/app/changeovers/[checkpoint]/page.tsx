@@ -48,14 +48,6 @@ export default async function ChangeoverPage({ params }: PageProps) {
               </h1>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2">
-              <Link
-                className="inline-flex items-center gap-2 rounded-full border border-amber-200/30 bg-amber-200/10 px-3 py-1.5 text-xs font-semibold text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-200/20 hover:text-white"
-                href={`https://what3words.com/${entry.location.w3w.replace(/^\/\/\//, "")}`}
-                target="_blank"
-              >
-                <MapPinLine size={14} weight="bold" aria-hidden="true" />
-                Open W3W
-              </Link>
               <a
                 className="inline-flex items-center gap-2 rounded-full border border-amber-200/30 bg-amber-200/10 px-3 py-1.5 text-xs font-semibold text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-200/20 hover:text-white"
                 href={entry.location.mapsUrl}
@@ -98,9 +90,14 @@ export default async function ChangeoverPage({ params }: PageProps) {
                 Location
               </p>
               <p className="mt-2 text-lg font-semibold">{entry.location.w3w}</p>
-              <p className="mt-1 text-sm text-slate-300">
-                Quick access to maps and notes
-              </p>
+              <Link
+                className="inline-flex items-center gap-2 rounded-full border border-amber-200/30 bg-amber-200/10 mt-2 px-3 py-1.5 text-xs font-semibold text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-200/20 hover:text-white"
+                href={`https://what3words.com/${entry.location.w3w.replace(/^\/\/\//, "")}`}
+                target="_blank"
+              >
+                <MapPinLine size={14} weight="bold" aria-hidden="true" />
+                Open W3W
+              </Link>
             </div>
           </div>
         </section>
