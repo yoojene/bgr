@@ -12,6 +12,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
+import { LiveCountdown } from "@/components/live-countdown";
 import { WebcamCarousel } from "@/components/webcam-carousel";
 import {
   changeoverLocations,
@@ -25,7 +26,6 @@ import {
   formatDayClock,
   formatDuration,
   getCheckpointStatus,
-  getCountdown,
   getCrewPointSummary,
   getCrewPoints,
   getPlannedArrival,
@@ -45,7 +45,6 @@ const sectionCardClass =
 
 const keswickWebcamUrl = "https://view.h264.cam/ref/kta/live";
 const blencathraWebcamUrl = "https://view.h264.cam/ref/blencathra/live";
-const greatGableWebcamUrl = "https://www.wasdale.com/17.html";
 
 const dashboardWebcams = [
   {
@@ -107,7 +106,6 @@ function getWeatherConditionIcon(code: number | null) {
 
 export default async function Home() {
   const now = new Date();
-  const countdown = getCountdown(now);
   const nextCrewPoint = getCrewPointSummary(now);
   const upcomingCheckpoints = getUpcomingCheckpoints(now, 5);
   const summitCheckpoints = getSummits();
@@ -181,17 +179,7 @@ export default async function Home() {
                   </p>
                 </div>
 
-                <div className="rounded-[1.5rem] border border-white/10 bg-white/8 px-5 py-4 backdrop-blur xl:mt-6 xl:max-w-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-200">
-                    {countdown.label}
-                  </p>
-                  <p className="mt-2 text-3xl font-semibold text-white">
-                    {countdown.value}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-300">
-                    {countdown.detail}
-                  </p>
-                </div>
+                <LiveCountdown />
               </div>
 
               <div className="relative mx-auto hidden w-full max-w-[340px] xl:block">
