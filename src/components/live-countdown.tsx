@@ -22,7 +22,9 @@ export function LiveCountdown() {
       <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-200">
         {countdown.label}
       </p>
-      <p className="mt-2 text-3xl font-semibold text-white">{countdown.value}</p>
+      <p className="mt-2 text-3xl font-semibold text-white">
+        {countdown.value}
+      </p>
       <p className="mt-1 text-sm text-slate-300">{countdown.detail}</p>
     </div>
   );
