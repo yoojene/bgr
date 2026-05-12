@@ -118,7 +118,9 @@ function WeatherCard({
   return (
     <div className="rounded-2xl border border-cyan-100 bg-cyan-100/75 p-4">
       <div className="flex items-center justify-between gap-3">
-        <h3 className={`font-semibold text-slate-900 ${compact ? "text-sm" : "text-base"}`}>
+        <h3
+          className={`font-semibold text-slate-900 ${compact ? "text-sm" : "text-base"}`}
+        >
           {forecast.name}
         </h3>
         <span className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap rounded-full bg-white/90 px-3 py-1 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-800">
@@ -126,15 +128,23 @@ function WeatherCard({
           {describeWeatherCode(forecast.weatherCode)}
         </span>
       </div>
-      <div className={`mt-3 grid gap-3 text-sm ${compact ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-4"}`}>
+      <div
+        className={`mt-3 grid gap-3 text-sm ${compact ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-4"}`}
+      >
         <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Temp</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+            Temp
+          </p>
           <p className="mt-1 font-semibold text-slate-900">
-            {forecast.temperature === null ? "--" : `${Math.round(forecast.temperature)}°C`}
+            {forecast.temperature === null
+              ? "--"
+              : `${Math.round(forecast.temperature)}°C`}
           </p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Feels</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+            Feels
+          </p>
           <p className="mt-1 font-semibold text-slate-900">
             {forecast.apparentTemperature === null
               ? "--"
@@ -142,13 +152,19 @@ function WeatherCard({
           </p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Wind</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+            Wind
+          </p>
           <p className="mt-1 font-semibold text-slate-900">
-            {forecast.windSpeed === null ? "--" : `${Math.round(forecast.windSpeed)} km/h`}
+            {forecast.windSpeed === null
+              ? "--"
+              : `${Math.round(forecast.windSpeed)} km/h`}
           </p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Rain</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+            Rain
+          </p>
           <p className="mt-1 font-semibold text-slate-900">
             {forecast.precipitationProbability === null
               ? "--"
@@ -171,7 +187,7 @@ export default async function Home() {
   const summitWeatherByName = new Map(
     weather
       .filter((forecast) => forecast.kind === "summit")
-      .map((forecast) => [forecast.name, forecast]),
+      .map((forecast) => [forecast.name, forecast])
   );
   const summitWeather = summitCheckpoints
     .map((checkpoint) => summitWeatherByName.get(checkpoint.name))
@@ -556,7 +572,8 @@ export default async function Home() {
                       Round tops
                     </p>
                     <p className="mt-1 text-sm text-slate-600">
-                      Forecasts for all 42 summits using Bob Graham Club grid references.
+                      Forecasts for all 42 summits using Bob Graham Club grid
+                      references.
                     </p>
                   </div>
                   <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-800">
@@ -566,7 +583,11 @@ export default async function Home() {
                 <div className="mt-4 max-h-[840px] overflow-y-auto pr-1">
                   <div className="grid gap-3 md:grid-cols-2">
                     {summitWeather.map((forecast) => (
-                      <WeatherCard key={forecast.name} forecast={forecast} compact />
+                      <WeatherCard
+                        key={forecast.name}
+                        forecast={forecast}
+                        compact
+                      />
                     ))}
                   </div>
                 </div>
