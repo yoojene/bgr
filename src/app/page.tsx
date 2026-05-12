@@ -291,10 +291,7 @@ export default async function Home() {
                 />
               </div>
             </article>
-            <WebcamCarousel
-              webcams={[...dashboardWebcams]}
-              className={`${statCardClass} border-sky-200/80 bg-sky-50/90`}
-            />
+
             <article
               className={`${statCardClass} border-sky-200/80 bg-sky-50/90`}
             >
@@ -465,7 +462,10 @@ export default async function Home() {
             </div>
           </article>
         </section>
-
+        <WebcamCarousel
+          webcams={[...dashboardWebcams]}
+          className={`${statCardClass} border-sky-200/80 bg-sky-50/90`}
+        />
         <section>
           <article
             className={`${sectionCardClass} border-cyan-200/80 bg-cyan-50/90`}
