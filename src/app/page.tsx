@@ -460,7 +460,7 @@ export default async function Home() {
                     <h3 className="font-semibold text-slate-900">
                       {forecast.name}
                     </h3>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-800">
+                    <span className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap rounded-full bg-white/90 px-3 py-1 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-800">
                       {getWeatherConditionIcon(forecast.weatherCode)}
                       {describeWeatherCode(forecast.weatherCode)}
                     </span>
