@@ -200,5 +200,5 @@ export const changeoverLocations: ChangeoverLocation[] = [
 ];
 
 export const trackerUrl = "https://track.trail.live/event/eugenes-bob-graham-round";
-export const raceStartIso = "2026-05-15T19:00:00+01:00";
+export const raceStartIso = "2026-05-12T19:00:00+01:00";
 export const raceCutoffHours = 24;

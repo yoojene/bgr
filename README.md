@@ -15,9 +15,10 @@ The first implementation slice is working and production-build clean.
 
 - `GET /api/weather` returns normalized Open-Meteo weather data for key crew locations.
 - `GET /api/notes` and `POST /api/notes` provide the initial note API shape.
-- Crew notes currently save through a server-memory store with local browser fallback.
+- Crew notes now persist through Vercel Postgres when `POSTGRES_URL` is configured.
+- Local development falls back to a backend JSON file at `.data/crew-notes.json` so notes survive refreshes and server restarts.
 
-The note flow is usable for development and UI integration, but it is not yet production-grade shared persistence. The next hardening step is swapping the in-memory notes store for a hosted database.
+For production deployments, configure `POSTGRES_URL` before using the crew notes API. The table definition is in `db/schema.sql` and the app will create the table on first use if it does not already exist.
 
 ## Run locally
 
@@ -28,6 +29,8 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+To test shared durable notes locally against a database, set `POSTGRES_URL` in your environment before starting the app.
+
 ## Validation
 
 ```bash
@@ -37,6 +40,6 @@ npm run build
 
 ## Next implementation slices
 
-1. Replace the interim note store with real shared persistence.
+1. Add a lightweight shared crew edit PIN and rate limiting for public note writes.
 2. Ingest actual tracker checkpoint arrivals into the route timeline.
 3. Add richer weather context for overnight crew decisions and exposed locations.
