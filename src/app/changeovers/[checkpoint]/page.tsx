@@ -1,4 +1,8 @@
-import { CaretLeft, MapPinLine, MapTrifold } from "@phosphor-icons/react/dist/ssr";
+import {
+  CaretLeft,
+  MapPinLine,
+  MapTrifold,
+} from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 

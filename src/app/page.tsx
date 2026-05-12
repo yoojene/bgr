@@ -63,7 +63,7 @@ export default async function Home() {
                 <div className="mt-2 grid gap-2">
                   {changeoverEntries.map((entry) => {
                     const checkpoint = crewPoints.find(
-                      (item) => item.name === entry.location.name,
+                      (item) => item.name === entry.location.name
                     );
 
                     return (
