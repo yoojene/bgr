@@ -27,6 +27,9 @@ import { describeWeatherCode, getWeatherSummaries } from "@/lib/weather";
 const statCardClass =
   "rounded-[1.75rem] border border-white/60 bg-white/85 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur";
 
+const sectionCardClass =
+  "rounded-[1.75rem] border p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur";
+
 export default async function Home() {
   const now = new Date();
   const countdown = getCountdown(now);
@@ -143,7 +146,7 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-            <article className={statCardClass}>
+            <article className={`${statCardClass} border-sky-200/80 bg-sky-50/90`}>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
                 Next crew point
               </p>
@@ -154,7 +157,7 @@ export default async function Home() {
                 {nextCrewPoint.detail}
               </p>
             </article>
-            <article className={statCardClass}>
+            <article className={`${statCardClass} border-pink-200/80 bg-pink-50/90`}>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-pink-700">
                 Route completion
               </p>
@@ -166,7 +169,7 @@ export default async function Home() {
                 ingestion is added.
               </p>
             </article>
-            <article className={statCardClass}>
+            <article className={`${statCardClass} border-emerald-200/80 bg-emerald-50/90`}>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
                 Tracker status
               </p>
@@ -182,7 +185,7 @@ export default async function Home() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <article className={`${statCardClass} overflow-hidden`}>
+          <article className={`${sectionCardClass} overflow-hidden border-sky-200/80 bg-sky-50/90`}>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
@@ -211,7 +214,7 @@ export default async function Home() {
           </article>
 
           <div className="grid gap-4">
-            <article className={statCardClass}>
+            <article className={`${sectionCardClass} border-amber-200/80 bg-amber-50/90`}>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-700">
                 Upcoming on plan
               </p>
@@ -219,7 +222,7 @@ export default async function Home() {
                 {upcomingCheckpoints.map((checkpoint) => (
                   <div
                     key={checkpoint.id}
-                    className="flex items-center justify-between gap-4 rounded-2xl bg-slate-100/80 px-4 py-3"
+                    className="flex items-center justify-between gap-4 rounded-2xl border border-amber-100 bg-amber-100/80 px-4 py-3"
                   >
                     <div>
                       <p className="font-semibold text-slate-900">
@@ -242,7 +245,7 @@ export default async function Home() {
               </div>
             </article>
 
-            <article className={statCardClass}>
+            <article className={`${sectionCardClass} border-violet-200/80 bg-violet-50/90`}>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-700">
                 Pacers by leg
               </p>
@@ -250,7 +253,7 @@ export default async function Home() {
                 {pacerLegs.map((leg) => (
                   <div
                     key={leg.leg}
-                    className="rounded-2xl bg-slate-100/80 p-4"
+                    className="rounded-2xl border border-violet-100 bg-violet-100/75 p-4"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-lg font-semibold text-slate-900">
@@ -271,7 +274,7 @@ export default async function Home() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <article className={statCardClass}>
+          <article className={`${sectionCardClass} border-emerald-200/80 bg-emerald-50/90`}>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
@@ -290,7 +293,7 @@ export default async function Home() {
               {summitCheckpoints.map((checkpoint) => (
                 <div
                   key={checkpoint.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-4"
+                  className="rounded-2xl border border-emerald-100 bg-white/90 p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -301,12 +304,12 @@ export default async function Home() {
                         Leg {checkpoint.leg}
                       </p>
                     </div>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-700">
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-800">
                       {getCheckpointStatus(checkpoint, now)}
                     </span>
                   </div>
                   <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-                    <div className="rounded-2xl bg-slate-100/80 p-3">
+                    <div className="rounded-2xl bg-emerald-100/75 p-3">
                       <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
                         ETA
                       </p>
@@ -314,7 +317,7 @@ export default async function Home() {
                         {formatClock(getPlannedArrival(checkpoint))}
                       </p>
                     </div>
-                    <div className="rounded-2xl bg-slate-100/80 p-3">
+                    <div className="rounded-2xl bg-emerald-100/75 p-3">
                       <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
                         Actual
                       </p>
@@ -322,7 +325,7 @@ export default async function Home() {
                         {checkpoint.actualArrival ?? "Waiting for tracker"}
                       </p>
                     </div>
-                    <div className="rounded-2xl bg-slate-100/80 p-3">
+                    <div className="rounded-2xl bg-emerald-100/75 p-3">
                       <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
                         Elapsed
                       </p>
@@ -336,7 +339,7 @@ export default async function Home() {
             </div>
           </article>
 
-          <article className={statCardClass}>
+          <article className={`${sectionCardClass} border-rose-200/80 bg-rose-50/90`}>
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-pink-700">
@@ -360,7 +363,7 @@ export default async function Home() {
                 return (
                   <div
                     key={checkpoint.id}
-                    className="rounded-2xl border border-slate-200 bg-white p-4"
+                    className="rounded-2xl border border-rose-100 bg-white/90 p-4"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
@@ -381,13 +384,13 @@ export default async function Home() {
                           {location.w3w}
                         </a>
                       ) : (
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-700">
+                        <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-rose-800">
                           Mapped point
                         </span>
                       )}
                     </div>
                     <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                      <div className="rounded-2xl bg-slate-100/80 p-3">
+                      <div className="rounded-2xl bg-rose-100/75 p-3">
                         <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
                           Arrival status
                         </p>
@@ -395,7 +398,7 @@ export default async function Home() {
                           {checkpoint.actualArrival ?? "Waiting for tracker"}
                         </p>
                       </div>
-                      <div className="rounded-2xl bg-slate-100/80 p-3">
+                      <div className="rounded-2xl bg-rose-100/75 p-3">
                         <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
                           Crew note
                         </p>
@@ -412,7 +415,7 @@ export default async function Home() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
-          <article className={statCardClass}>
+          <article className={`${sectionCardClass} border-cyan-200/80 bg-cyan-50/90`}>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-700">
               Weather snapshots
             </p>
@@ -423,13 +426,13 @@ export default async function Home() {
               {weather.map((forecast) => (
                 <div
                   key={forecast.name}
-                  className="rounded-2xl bg-slate-100/80 p-4"
+                  className="rounded-2xl border border-cyan-100 bg-cyan-100/75 p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="font-semibold text-slate-900">
                       {forecast.name}
                     </h3>
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
+                    <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-800">
                       {describeWeatherCode(forecast.weatherCode)}
                     </span>
                   </div>
@@ -480,7 +483,7 @@ export default async function Home() {
             </div>
           </article>
 
-          <section>
+          <section className="rounded-[1.75rem] border border-sky-200/80 bg-sky-50/60 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur">
             <div className="mb-4 flex items-end justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
@@ -500,7 +503,7 @@ export default async function Home() {
         </section>
 
         <section
-          className={`${statCardClass} flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
+          className={`${sectionCardClass} flex flex-col gap-3 border-slate-200/80 bg-slate-100/80 sm:flex-row sm:items-center sm:justify-between`}
         >
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
