@@ -40,23 +40,31 @@ export function ChangeoverNotes({ location }: Props) {
 
   const activeSavedNote = savedNotes[activeNoteIndex] ?? null;
 
-  const syncSavedNotes = useCallback((notes: SharedNote[]) => {
-    const nextNotes = notes
-      .filter(
-        (note) =>
-          note.checkpointName === location.name && note.crewNote.trim().length > 0,
-      )
-      .sort((left, right) => (right.updatedAt ?? "").localeCompare(left.updatedAt ?? ""));
+  const syncSavedNotes = useCallback(
+    (notes: SharedNote[]) => {
+      const nextNotes = notes
+        .filter(
+          (note) =>
+            note.checkpointName === location.name &&
+            note.crewNote.trim().length > 0
+        )
+        .sort((left, right) =>
+          (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "")
+        );
 
-    setSavedNotes(nextNotes);
+      setSavedNotes(nextNotes);
 
-    if (nextNotes.length === 0) {
-      setActiveNoteIndex(0);
-      return;
-    }
+      if (nextNotes.length === 0) {
+        setActiveNoteIndex(0);
+        return;
+      }
 
-    setActiveNoteIndex((currentIndex) => Math.min(currentIndex, nextNotes.length - 1));
-  }, [location.name]);
+      setActiveNoteIndex((currentIndex) =>
+        Math.min(currentIndex, nextNotes.length - 1)
+      );
+    },
+    [location.name]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -79,7 +87,9 @@ export function ChangeoverNotes({ location }: Props) {
 
         const savedNote = payload.notes
           .filter((note) => note.checkpointName === location.name)
-          .sort((left, right) => (right.updatedAt ?? "").localeCompare(left.updatedAt ?? ""))[0];
+          .sort((left, right) =>
+            (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "")
+          )[0];
 
         if (savedNote?.crewNote) {
           setCrewNote(savedNote.crewNote);
@@ -142,13 +152,13 @@ export function ChangeoverNotes({ location }: Props) {
 
   function showPreviousSavedNote() {
     setActiveNoteIndex((currentIndex) =>
-      currentIndex === 0 ? savedNotes.length - 1 : currentIndex - 1,
+      currentIndex === 0 ? savedNotes.length - 1 : currentIndex - 1
     );
   }
 
   function showNextSavedNote() {
     setActiveNoteIndex((currentIndex) =>
-      currentIndex === savedNotes.length - 1 ? 0 : currentIndex + 1,
+      currentIndex === savedNotes.length - 1 ? 0 : currentIndex + 1
     );
   }
 
@@ -215,14 +225,17 @@ export function ChangeoverNotes({ location }: Props) {
               </p>
               <p className="whitespace-pre-line">{activeSavedNote.crewNote}</p>
               <p className="mt-3 text-xs text-slate-600">
-                Saved {" "}
+                Saved{" "}
                 {activeSavedNote.updatedAt
-                  ? new Date(activeSavedNote.updatedAt).toLocaleString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
+                  ? new Date(activeSavedNote.updatedAt).toLocaleString(
+                      "en-GB",
+                      {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )
                   : "recently"}
               </p>
             </>
