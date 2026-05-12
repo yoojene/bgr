@@ -12,6 +12,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
+import { WebcamCarousel } from "@/components/webcam-carousel";
 import {
   changeoverLocations,
   checkpoints,
@@ -41,6 +42,32 @@ const statCardClass =
 
 const sectionCardClass =
   "rounded-[1.75rem] border p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur";
+
+const keswickWebcamUrl = "https://view.h264.cam/ref/kta/live";
+const blencathraWebcamUrl = "https://view.h264.cam/ref/blencathra/live";
+const greatGableWebcamUrl = "https://www.wasdale.com/17.html";
+
+const dashboardWebcams = [
+  {
+    name: "Keswick",
+    title: "Market Square",
+    url: keswickWebcamUrl,
+    description: "Live town-centre conditions near Moot Hall from Keswick.net.",
+  },
+  // {
+  //   name: "Great Gable",
+  //   title: "Wasdale Head view",
+  //   url: greatGableWebcamUrl,
+  //   description:
+  //     "Great Gable view from Wasdale Head Inn. Cloud on Gable can make conditions look worse than nearby fells.",
+  // },
+  {
+    name: "Blencathra",
+    title: "Blencathra",
+    url: blencathraWebcamUrl,
+    description: "Live Blencathra conditions from the Keswick.net webcam feed.",
+  },
+] as const;
 
 function getWeatherConditionIcon(code: number | null) {
   if (code === null) {
@@ -264,6 +291,10 @@ export default async function Home() {
                 />
               </div>
             </article>
+            <WebcamCarousel
+              webcams={[...dashboardWebcams]}
+              className={`${statCardClass} border-sky-200/80 bg-sky-50/90`}
+            />
             <article
               className={`${statCardClass} border-sky-200/80 bg-sky-50/90`}
             >
