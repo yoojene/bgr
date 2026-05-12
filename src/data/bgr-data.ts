@@ -33,6 +33,15 @@ export type ChangeoverLocation = {
   runnerNote: string;
 };
 
+export type WeatherLocation = {
+  name: string;
+  kind: "crew" | "summit";
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
+};
+
 const rawSchedule = [
   ["1", "Moot Hall", 0, 0, "19:00:00"],
   ["1", "Skiddaw", 80, 80, "20:20:00"],
@@ -120,6 +129,153 @@ function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+const britishGridLetters = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
+
+function parseGridReference(gridReference: string) {
+  const normalized = gridReference
+    .replace(/\./g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+  const match = normalized.match(/^([A-Z]{2})\s*(\d{3})\s*(\d{3})$/);
+
+  if (!match) {
+    throw new Error(`Unsupported grid reference: ${gridReference}`);
+  }
+
+  const [, letters, eastingDigits, northingDigits] = match;
+  const firstLetter = britishGridLetters.indexOf(letters[0]);
+  const secondLetter = britishGridLetters.indexOf(letters[1]);
+
+  if (firstLetter === -1 || secondLetter === -1) {
+    throw new Error(`Invalid grid reference letters: ${gridReference}`);
+  }
+
+  const easting100km = (((firstLetter - 2 + 25) % 5) * 5) + (secondLetter % 5);
+  const northing100km =
+    19 - Math.floor(firstLetter / 5) * 5 - Math.floor(secondLetter / 5);
+
+  return {
+    easting: easting100km * 100000 + Number.parseInt(eastingDigits, 10) * 100,
+    northing: northing100km * 100000 + Number.parseInt(northingDigits, 10) * 100,
+  };
+}
+
+function osGridToLatLng(gridReference: string) {
+  const { easting, northing } = parseGridReference(gridReference);
+  const airyA = 6377563.396;
+  const airyB = 6356256.909;
+  const scaleFactor = 0.9996012717;
+  const latOrigin = (49 * Math.PI) / 180;
+  const lonOrigin = (-2 * Math.PI) / 180;
+  const northingOrigin = -100000;
+  const eastingOrigin = 400000;
+  const airyE2 = 1 - (airyB * airyB) / (airyA * airyA);
+  const airyN = (airyA - airyB) / (airyA + airyB);
+
+  let latitude = latOrigin;
+  let meridionalArc = 0;
+
+  do {
+    latitude = (northing - northingOrigin - meridionalArc) / (airyA * scaleFactor) + latitude;
+    const ma =
+      (1 + airyN + (5 / 4) * airyN ** 2 + (5 / 4) * airyN ** 3) *
+      (latitude - latOrigin);
+    const mb =
+      (3 * airyN + 3 * airyN ** 2 + (21 / 8) * airyN ** 3) *
+      Math.sin(latitude - latOrigin) *
+      Math.cos(latitude + latOrigin);
+    const mc =
+      ((15 / 8) * airyN ** 2 + (15 / 8) * airyN ** 3) *
+      Math.sin(2 * (latitude - latOrigin)) *
+      Math.cos(2 * (latitude + latOrigin));
+    const md =
+      (35 / 24) *
+      airyN ** 3 *
+      Math.sin(3 * (latitude - latOrigin)) *
+      Math.cos(3 * (latitude + latOrigin));
+    meridionalArc = airyB * scaleFactor * (ma - mb + mc - md);
+  } while (northing - northingOrigin - meridionalArc >= 0.00001);
+
+  const sinLatitude = Math.sin(latitude);
+  const cosLatitude = Math.cos(latitude);
+  const tanLatitude = Math.tan(latitude);
+  const nu = airyA * scaleFactor / Math.sqrt(1 - airyE2 * sinLatitude ** 2);
+  const rho =
+    (airyA * scaleFactor * (1 - airyE2)) /
+    Math.pow(1 - airyE2 * sinLatitude ** 2, 1.5);
+  const etaSquared = nu / rho - 1;
+  const deltaEasting = easting - eastingOrigin;
+
+  const vii = tanLatitude / (2 * rho * nu);
+  const viii =
+    (tanLatitude / (24 * rho * nu ** 3)) *
+    (5 + 3 * tanLatitude ** 2 + etaSquared - 9 * tanLatitude ** 2 * etaSquared);
+  const ix =
+    (tanLatitude / (720 * rho * nu ** 5)) *
+    (61 + 90 * tanLatitude ** 2 + 45 * tanLatitude ** 4);
+  const x = 1 / (cosLatitude * nu);
+  const xi =
+    (1 / (cosLatitude * 6 * nu ** 3)) * (nu / rho + 2 * tanLatitude ** 2);
+  const xii =
+    (1 / (cosLatitude * 120 * nu ** 5)) *
+    (5 + 28 * tanLatitude ** 2 + 24 * tanLatitude ** 4);
+  const xiia =
+    (1 / (cosLatitude * 5040 * nu ** 7)) *
+    (61 + 662 * tanLatitude ** 2 + 1320 * tanLatitude ** 4 + 720 * tanLatitude ** 6);
+
+  const airyLatitude =
+    latitude -
+    vii * deltaEasting ** 2 +
+    viii * deltaEasting ** 4 -
+    ix * deltaEasting ** 6;
+  const airyLongitude =
+    lonOrigin +
+    x * deltaEasting -
+    xi * deltaEasting ** 3 +
+    xii * deltaEasting ** 5 -
+    xiia * deltaEasting ** 7;
+
+  const airyNu = airyA / Math.sqrt(1 - airyE2 * Math.sin(airyLatitude) ** 2);
+  const x1 = airyNu * Math.cos(airyLatitude) * Math.cos(airyLongitude);
+  const y1 = airyNu * Math.cos(airyLatitude) * Math.sin(airyLongitude);
+  const z1 = airyNu * (1 - airyE2) * Math.sin(airyLatitude);
+
+  const tx = 446.448;
+  const ty = -125.157;
+  const tz = 542.06;
+  const rx = ((0.1502 / 3600) * Math.PI) / 180;
+  const ry = ((0.247 / 3600) * Math.PI) / 180;
+  const rz = ((0.8421 / 3600) * Math.PI) / 180;
+  const scale = 20.4894 * 1e-6;
+
+  const x2 = tx + (1 + scale) * x1 - rz * y1 + ry * z1;
+  const y2 = ty + rz * x1 + (1 + scale) * y1 - rx * z1;
+  const z2 = tz - ry * x1 + rx * y1 + (1 + scale) * z1;
+
+  const wgs84A = 6378137;
+  const wgs84B = 6356752.3141;
+  const wgs84E2 = 1 - (wgs84B * wgs84B) / (wgs84A * wgs84A);
+  const p = Math.sqrt(x2 * x2 + y2 * y2);
+
+  let wgs84Latitude = Math.atan2(z2, p * (1 - wgs84E2));
+  let nextLatitude = 0;
+
+  do {
+    wgs84Latitude = nextLatitude || wgs84Latitude;
+    const nuWgs84 = wgs84A / Math.sqrt(1 - wgs84E2 * Math.sin(wgs84Latitude) ** 2);
+    nextLatitude = Math.atan2(
+      z2 + wgs84E2 * nuWgs84 * Math.sin(wgs84Latitude),
+      p,
+    );
+  } while (Math.abs(nextLatitude - wgs84Latitude) > 1e-12);
+
+  return {
+    latitude: Number(((nextLatitude * 180) / Math.PI).toFixed(5)),
+    longitude: Number(((Math.atan2(y2, x2) * 180) / Math.PI).toFixed(5)),
+  };
+}
+
 export const checkpoints: Checkpoint[] = rawSchedule.map(
   ([leg, name, legMinutes, cumulativeMinutes, plannedClockTime], index) => ({
     id: slugify(`${leg}-${name}`),
@@ -198,6 +354,75 @@ export const changeoverLocations: ChangeoverLocation[] = [
     runnerNote: "Start calm. Finish ready with warm layers, recovery drink, and somewhere dry fast.",
   },
 ];
+
+const summitGridReferences: Record<string, string> = {
+  Skiddaw: "NY 260 291",
+  "Great Calva": "NY 291 312",
+  Blencathra: "NY 323 277",
+  "Clough Head": "NY 334 225",
+  "Great Dodd": "NY 342 206",
+  "Watson's Dodd": "NY 336 196",
+  "Stybarrow Dodd": "NY 343 189",
+  Raise: "NY 343 174",
+  "White Side": "NY 338 167",
+  "Lower Man": "NY 337 155",
+  Helvellyn: "NY 342 151",
+  "Nethermost Pike": "NY 344 142",
+  "Dollywagon Pike": "NY 346 131",
+  Fairfield: "NY 359 118",
+  "Seat Sandal": "NY 344 115",
+  "Steel Fell": "NY 319 111",
+  "Calf Crag": "NY 302 104",
+  "Sergeant Man": "NY 286 089",
+  "High Raise": "NY 281 095",
+  "Thurnacar Knott": "NY 279 080",
+  "Harrison Stickle": "NY 282 074",
+  "Pike of Stickle": "NY 274 074",
+  "Rossett Pike": "NY 249 076",
+  Bowfell: "NY 245 064",
+  "Esk Pike": "NY 237 075",
+  "Great End": "NY 227 084",
+  "Ill Crag": "NY 223 073",
+  "Broad Crag": "NY 219 075",
+  "Scafell Pike": "NY 215 072",
+  Scafell: "NY 207 065",
+  Yewbarrow: "NY 173 085",
+  "Red Pike": "NY 165 106",
+  Steeple: "NY 157 117",
+  Pillar: "NY 171 121",
+  "Kirk Fell": "NY 195 105",
+  "Great Gable": "NY 211 103",
+  "Green Gable": "NY 215 107",
+  Brandreth: "NY 215 119",
+  "Grey Knotts": "NY 217 126",
+  "Dale Head": "NY 223 153",
+  Hindscarth: "NY 216 165",
+  Robinson: "NY 202 169",
+};
+
+export const crewWeatherLocations: WeatherLocation[] = changeoverLocations
+  .filter((location) => location.name !== "Newlands Church")
+  .map((location) => ({
+    name: location.name,
+    kind: "crew" as const,
+    coordinates: location.coordinates,
+  }));
+
+export const summitWeatherLocations: WeatherLocation[] = checkpoints
+  .filter((checkpoint) => checkpoint.type === "summit")
+  .map((checkpoint) => {
+    const gridReference = summitGridReferences[checkpoint.name];
+
+    if (!gridReference) {
+      throw new Error(`Missing summit weather coordinates for ${checkpoint.name}`);
+    }
+
+    return {
+      name: checkpoint.name,
+      kind: "summit" as const,
+      coordinates: osGridToLatLng(gridReference),
+    };
+  });
 
 export const trackerUrl = "https://track.trail.live/event/eugenes-bob-graham-round";
 export const raceStartIso = "2026-05-12T19:00:00+01:00";

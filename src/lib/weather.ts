@@ -2,6 +2,7 @@ import { getWeatherLocations } from "@/lib/race";
 
 export type WeatherSummary = {
   name: string;
+  kind: "crew" | "summit";
   temperature: number | null;
   apparentTemperature: number | null;
   windSpeed: number | null;
@@ -69,6 +70,7 @@ export async function getWeatherSummaries(): Promise<WeatherSummary[]> {
 
         return {
           name: location.name,
+          kind: location.kind,
           temperature: data.current?.temperature_2m ?? null,
           apparentTemperature: data.current?.apparent_temperature ?? null,
           windSpeed: data.current?.wind_speed_10m ?? null,
@@ -78,6 +80,7 @@ export async function getWeatherSummaries(): Promise<WeatherSummary[]> {
       } catch {
         return {
           name: location.name,
+          kind: location.kind,
           temperature: null,
           apparentTemperature: null,
           windSpeed: null,

@@ -1,9 +1,11 @@
 import {
-  changeoverLocations,
   checkpoints,
   raceCutoffHours,
   raceStartIso,
+  crewWeatherLocations,
+  summitWeatherLocations,
   type Checkpoint,
+  type WeatherLocation,
 } from "@/data/bgr-data";
 
 export const raceStart = new Date(raceStartIso);
@@ -137,6 +139,6 @@ export function getRouteCompletion(now = new Date()) {
   return `${percent.toFixed(1)}%`;
 }
 
-export function getWeatherLocations() {
-  return changeoverLocations.filter((location) => location.name !== "Newlands Church");
+export function getWeatherLocations(): WeatherLocation[] {
+  return [...crewWeatherLocations, ...summitWeatherLocations];
 }

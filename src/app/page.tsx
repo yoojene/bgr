@@ -35,7 +35,11 @@ import {
   raceCutoff,
   raceStart,
 } from "@/lib/race";
-import { describeWeatherCode, getWeatherSummaries } from "@/lib/weather";
+import {
+  describeWeatherCode,
+  getWeatherSummaries,
+  type WeatherSummary,
+} from "@/lib/weather";
 
 const statCardClass =
   "rounded-[1.75rem] border border-white/60 bg-white/85 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur";
@@ -104,6 +108,58 @@ function getWeatherConditionIcon(code: number | null) {
   return <Cloud size={14} weight="bold" aria-hidden="true" />;
 }
 
+function WeatherCard({
+  forecast,
+  compact = false,
+}: {
+  forecast: WeatherSummary;
+  compact?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-cyan-100 bg-cyan-100/75 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className={`font-semibold text-slate-900 ${compact ? "text-sm" : "text-base"}`}>
+          {forecast.name}
+        </h3>
+        <span className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap rounded-full bg-white/90 px-3 py-1 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-800">
+          {getWeatherConditionIcon(forecast.weatherCode)}
+          {describeWeatherCode(forecast.weatherCode)}
+        </span>
+      </div>
+      <div className={`mt-3 grid gap-3 text-sm ${compact ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-4"}`}>
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Temp</p>
+          <p className="mt-1 font-semibold text-slate-900">
+            {forecast.temperature === null ? "--" : `${Math.round(forecast.temperature)}°C`}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Feels</p>
+          <p className="mt-1 font-semibold text-slate-900">
+            {forecast.apparentTemperature === null
+              ? "--"
+              : `${Math.round(forecast.apparentTemperature)}°C`}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Wind</p>
+          <p className="mt-1 font-semibold text-slate-900">
+            {forecast.windSpeed === null ? "--" : `${Math.round(forecast.windSpeed)} km/h`}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Rain</p>
+          <p className="mt-1 font-semibold text-slate-900">
+            {forecast.precipitationProbability === null
+              ? "--"
+              : `${Math.round(forecast.precipitationProbability)}%`}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default async function Home() {
   const now = new Date();
   const nextCrewPoint = getCrewPointSummary(now);
@@ -111,6 +167,15 @@ export default async function Home() {
   const summitCheckpoints = getSummits();
   const crewPoints = getCrewPoints();
   const weather = await getWeatherSummaries();
+  const crewWeather = weather.filter((forecast) => forecast.kind === "crew");
+  const summitWeatherByName = new Map(
+    weather
+      .filter((forecast) => forecast.kind === "summit")
+      .map((forecast) => [forecast.name, forecast]),
+  );
+  const summitWeather = summitCheckpoints
+    .map((checkpoint) => summitWeatherByName.get(checkpoint.name))
+    .filter((forecast): forecast is WeatherSummary => Boolean(forecast));
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.24),_transparent_22%),radial-gradient(circle_at_top_right,_rgba(244,114,182,0.22),_transparent_18%),linear-gradient(180deg,_#fff8ef_0%,_#f8fbff_38%,_#eef6ff_100%)] pb-20 text-slate-900">
@@ -462,65 +527,50 @@ export default async function Home() {
               Weather Forecast
             </p>
 
-            <div className="mt-4 grid gap-3">
-              {weather.map((forecast) => (
-                <div
-                  key={forecast.name}
-                  className="rounded-2xl border border-cyan-100 bg-cyan-100/75 p-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="font-semibold text-slate-900">
-                      {forecast.name}
-                    </h3>
-                    <span className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap rounded-full bg-white/90 px-3 py-1 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-800">
-                      {getWeatherConditionIcon(forecast.weatherCode)}
-                      {describeWeatherCode(forecast.weatherCode)}
-                    </span>
+            <div className="mt-4 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+              <div className="rounded-[1.5rem] border border-cyan-100 bg-white/70 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-700">
+                      Crew stops
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Roadside and changeover conditions.
+                    </p>
                   </div>
-                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                        Temp
-                      </p>
-                      <p className="mt-1 font-semibold text-slate-900">
-                        {forecast.temperature === null
-                          ? "--"
-                          : `${Math.round(forecast.temperature)}°C`}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                        Feels
-                      </p>
-                      <p className="mt-1 font-semibold text-slate-900">
-                        {forecast.apparentTemperature === null
-                          ? "--"
-                          : `${Math.round(forecast.apparentTemperature)}°C`}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                        Wind
-                      </p>
-                      <p className="mt-1 font-semibold text-slate-900">
-                        {forecast.windSpeed === null
-                          ? "--"
-                          : `${Math.round(forecast.windSpeed)} km/h`}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                        Rain
-                      </p>
-                      <p className="mt-1 font-semibold text-slate-900">
-                        {forecast.precipitationProbability === null
-                          ? "--"
-                          : `${Math.round(forecast.precipitationProbability)}%`}
-                      </p>
-                    </div>
+                  <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-800">
+                    {crewWeather.length}
+                  </span>
+                </div>
+                <div className="mt-4 grid gap-3">
+                  {crewWeather.map((forecast) => (
+                    <WeatherCard key={forecast.name} forecast={forecast} />
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-cyan-100 bg-white/70 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-700">
+                      Round tops
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Forecasts for all 42 summits using Bob Graham Club grid references.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-800">
+                    {summitWeather.length}
+                  </span>
+                </div>
+                <div className="mt-4 max-h-[840px] overflow-y-auto pr-1">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {summitWeather.map((forecast) => (
+                      <WeatherCard key={forecast.name} forecast={forecast} compact />
+                    ))}
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </article>
         </section>
