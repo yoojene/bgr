@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr";
+import { CaretLeft, CaretRight, Trash } from "@phosphor-icons/react/dist/ssr";
 
 import type { ChangeoverLocation } from "@/data/bgr-data";
 
@@ -10,7 +10,7 @@ type Props = {
   location: ChangeoverLocation;
 };
 
-type NoteStatus = "idle" | "saving" | "saved" | "error";
+type NoteStatus = "idle" | "saving" | "saved" | "deleting" | "error";
 
 type SharedNote = {
   id: string;
@@ -39,6 +39,11 @@ export function ChangeoverNotes({ location }: Props) {
   const [activeNoteIndex, setActiveNoteIndex] = useState(0);
 
   const activeSavedNote = savedNotes[activeNoteIndex] ?? null;
+  const normalizedAuthorName = authorName.trim().toLocaleLowerCase();
+  const canDeleteActiveNote =
+    Boolean(activeSavedNote) &&
+    activeSavedNote.authorName.trim().toLocaleLowerCase() ===
+      normalizedAuthorName;
 
   const syncSavedNotes = useCallback(
     (notes: SharedNote[]) => {
@@ -150,6 +155,46 @@ export function ChangeoverNotes({ location }: Props) {
     }
   }
 
+  async function deleteNote() {
+    if (!activeSavedNote || !canDeleteActiveNote) {
+      setNoteStatus("error");
+      return;
+    }
+
+    setNoteStatus("deleting");
+
+    try {
+      const response = await fetch("/api/notes", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: activeSavedNote.id,
+          authorName: authorName.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to delete note");
+      }
+
+      const remainingNotes = savedNotes.filter(
+        (note) => note.id !== activeSavedNote.id
+      );
+      setSavedNotes(remainingNotes);
+      setActiveNoteIndex((currentIndex) =>
+        remainingNotes.length === 0
+          ? 0
+          : Math.min(currentIndex, remainingNotes.length - 1)
+      );
+      setLastSavedAt(remainingNotes[0]?.updatedAt ?? null);
+      setNoteStatus("saved");
+    } catch {
+      setNoteStatus("error");
+    }
+  }
+
   function showPreviousSavedNote() {
     setActiveNoteIndex((currentIndex) =>
       currentIndex === 0 ? savedNotes.length - 1 : currentIndex - 1
@@ -224,20 +269,33 @@ export function ChangeoverNotes({ location }: Props) {
                 {activeSavedNote.authorName}
               </p>
               <p className="whitespace-pre-line">{activeSavedNote.crewNote}</p>
-              <p className="mt-3 text-xs text-slate-600">
-                Saved{" "}
-                {activeSavedNote.updatedAt
-                  ? new Date(activeSavedNote.updatedAt).toLocaleString(
-                      "en-GB",
-                      {
-                        day: "2-digit",
-                        month: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
-                    )
-                  : "recently"}
-              </p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-slate-600">
+                  Saved{" "}
+                  {activeSavedNote.updatedAt
+                    ? new Date(activeSavedNote.updatedAt).toLocaleString(
+                        "en-GB",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )
+                    : "recently"}
+                </p>
+                {canDeleteActiveNote ? (
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                    onClick={() => void deleteNote()}
+                    disabled={noteStatus === "deleting"}
+                  >
+                    <Trash size={14} weight="bold" />
+                    Delete note
+                  </button>
+                ) : null}
+              </div>
             </>
           ) : (
             <p className="text-slate-600">
@@ -288,13 +346,15 @@ export function ChangeoverNotes({ location }: Props) {
           <span>
             {noteStatus === "saving"
               ? "Saving..."
-              : noteStatus === "saved"
-                ? "Saved"
-                : noteStatus === "error"
-                  ? authorName.trim().length === 0
-                    ? "Add your name to save"
-                    : "Saved locally only"
-                  : "Draft"}
+              : noteStatus === "deleting"
+                ? "Deleting..."
+                : noteStatus === "saved"
+                  ? "Saved"
+                  : noteStatus === "error"
+                    ? authorName.trim().length === 0
+                      ? "Add your name to save or delete"
+                      : "Saved locally only or delete failed"
+                    : "Draft"}
           </span>
           <button
             type="button"

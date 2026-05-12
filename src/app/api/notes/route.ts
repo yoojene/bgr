@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { listCrewNotes, saveCrewNote } from "@/lib/notes-store";
+import { deleteCrewNote, listCrewNotes, saveCrewNote } from "@/lib/notes-store";
 
 export async function GET() {
   try {
@@ -44,6 +44,42 @@ export async function POST(request: NextRequest) {
       {
         error:
           error instanceof Error ? error.message : "Unable to save crew note.",
+      },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const body = (await request.json()) as Partial<{
+    id: string;
+    authorName: string;
+  }>;
+
+  if (!body.id || typeof body.id !== "string") {
+    return NextResponse.json({ error: "Note id is required." }, { status: 400 });
+  }
+
+  if (!body.authorName || typeof body.authorName !== "string") {
+    return NextResponse.json({ error: "Author name is required." }, { status: 400 });
+  }
+
+  try {
+    const deleted = await deleteCrewNote(body.id, body.authorName);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { error: "You can only delete your own note." },
+        { status: 403 },
+      );
+    }
+
+    return NextResponse.json({ deleted: true });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error ? error.message : "Unable to delete crew note.",
       },
       { status: 500 },
     );
