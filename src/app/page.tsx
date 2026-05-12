@@ -52,11 +52,12 @@ export default async function Home() {
             <div className="mt-4 grid gap-6 xl:grid-cols-[1fr_340px] xl:items-start">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between xl:block">
                 <div>
-                <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-                  Eugene&apos;s Bob Graham Round
-                </h1>
+                  <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                    Eugene&apos;s Bob Graham Round
+                  </h1>
                   <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-                    Live timings, tracker access, crew notes, pacers, and weather in one race-day view.
+                    Live timings, tracker access, crew notes, pacers, and
+                    weather in one race-day view.
                   </p>
                 </div>
 
