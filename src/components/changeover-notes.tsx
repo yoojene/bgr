@@ -23,16 +23,8 @@ type SharedNote = {
 export function ChangeoverNotes({ location }: Props) {
   const draftStorageKey = `crew-note-draft:${location.name}`;
   const authorStorageKey = `crew-note-author:${location.name}`;
-  const [crewNote, setCrewNote] = useState<string>(
-    typeof window === "undefined"
-      ? ""
-      : (window.localStorage.getItem(draftStorageKey) ?? "")
-  );
-  const [authorName, setAuthorName] = useState<string>(
-    typeof window === "undefined"
-      ? ""
-      : (window.localStorage.getItem(authorStorageKey) ?? "")
-  );
+  const [crewNote, setCrewNote] = useState<string>("");
+  const [authorName, setAuthorName] = useState<string>("");
   const [noteStatus, setNoteStatus] = useState<NoteStatus>("idle");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [savedNotes, setSavedNotes] = useState<SharedNote[]>([]);
@@ -44,6 +36,8 @@ export function ChangeoverNotes({ location }: Props) {
     Boolean(activeSavedNote) &&
     activeSavedNote.authorName.trim().toLocaleLowerCase() ===
       normalizedAuthorName;
+  const canSaveNote =
+    authorName.trim().length > 0 && crewNote.trim().length > 0;
 
   const syncSavedNotes = useCallback(
     (notes: SharedNote[]) => {
@@ -96,10 +90,6 @@ export function ChangeoverNotes({ location }: Props) {
             (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "")
           )[0];
 
-        if (savedNote?.crewNote) {
-          setCrewNote(savedNote.crewNote);
-        }
-
         setLastSavedAt(savedNote?.updatedAt ?? null);
       } catch {
         if (!cancelled) {
@@ -116,7 +106,7 @@ export function ChangeoverNotes({ location }: Props) {
   }, [location.name, syncSavedNotes]);
 
   async function saveNote() {
-    if (!authorName.trim()) {
+    if (!canSaveNote) {
       setNoteStatus("error");
       return;
     }
@@ -351,8 +341,8 @@ export function ChangeoverNotes({ location }: Props) {
                 : noteStatus === "saved"
                   ? "Saved"
                   : noteStatus === "error"
-                    ? authorName.trim().length === 0
-                      ? "Add your name to save or delete"
+                    ? !canSaveNote
+                      ? "Add your name and note to save"
                       : "Saved locally only or delete failed"
                     : "Draft"}
           </span>
@@ -360,7 +350,7 @@ export function ChangeoverNotes({ location }: Props) {
             type="button"
             className="rounded-full bg-sky-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-slate-300"
             onClick={() => void saveNote()}
-            disabled={noteStatus === "saving" || crewNote.trim().length === 0}
+            disabled={noteStatus === "saving" || !canSaveNote}
           >
             Add note
           </button>

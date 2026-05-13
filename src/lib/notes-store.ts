@@ -31,6 +31,10 @@ const globalState = globalThis as typeof globalThis & {
   __bgrCrewNotesSchemaReady?: Promise<void>;
 };
 
+function normalizeAuthorName(authorName: string) {
+  return authorName.trim().toLocaleLowerCase();
+}
+
 function mapRow(row: CrewNoteRow): StoredCrewNote {
   return {
     id: row.id,
@@ -177,9 +181,27 @@ async function saveCrewNoteToDevFile(
 async function deleteCrewNoteFromPostgres(id: string, authorName: string) {
   await ensureNotesTable();
 
+  const existing = await sql<{ author_name: string }>`
+    select author_name
+    from crew_notes
+    where id = ${id}
+    limit 1
+  `;
+
+  if (existing.rows.length === 0) {
+    return false;
+  }
+
+  if (
+    normalizeAuthorName(existing.rows[0].author_name) !==
+    normalizeAuthorName(authorName)
+  ) {
+    return false;
+  }
+
   const result = await sql<{ id: string }>`
     delete from crew_notes
-    where id = ${id} and author_name = ${authorName}
+    where id = ${id}
     returning id
   `;
 
@@ -195,7 +217,11 @@ async function deleteCrewNoteFromDevFile(id: string, authorName: string) {
 
   const notes = await readDevNotesFile();
   const nextNotes = notes.filter(
-    (note) => !(note.id === id && note.authorName === authorName),
+    (note) =>
+      !(
+        note.id === id &&
+        normalizeAuthorName(note.authorName) === normalizeAuthorName(authorName)
+      ),
   );
 
   if (nextNotes.length === notes.length) {
