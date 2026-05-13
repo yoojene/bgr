@@ -9,7 +9,9 @@
     "start": "next start",
     "start:lan": "next start --hostname 0.0.0.0 --port 3000",
     "lint": "eslint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui --headed --project=chromium --workers=1",
+    "test:e2e:ui:tracker": "playwright test tests/tracker-simulation.spec.ts --ui --headed --project=chromium --workers=1"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
