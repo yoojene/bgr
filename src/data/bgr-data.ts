@@ -424,6 +424,11 @@ export const summitWeatherLocations: WeatherLocation[] = checkpoints
     };
   });
 
+export const trackerEventId = 32670;
+export const trackerRouteId = 36668;
+export const trackerParticipantName = "Eugene";
+export const trackerParticipantBib = "1";
+export const trackerDeviceId = "tracker3832";
 export const trackerUrl = "https://track.trail.live/event/eugenes-bob-graham-round";
 export const raceStartIso = "2026-05-15T19:00:00+01:00";
 export const raceCutoffHours = 24;

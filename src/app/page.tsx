@@ -30,6 +30,7 @@ import {
   raceCutoff,
   raceStart,
 } from "@/lib/race";
+import { getTrackerState } from "@/lib/tracker";
 import {
   describeWeatherCode,
   getWeatherSummaries,
@@ -187,12 +188,35 @@ function WeatherCard({
   );
 }
 
+function getTrackerHeadline(
+  status: Awaited<ReturnType<typeof getTrackerState>>["status"]
+) {
+  if (status === "live") {
+    return "Tracker live";
+  }
+
+  if (status === "stale") {
+    return "Tracker stale";
+  }
+
+  if (status === "retired") {
+    return "Tracker retired";
+  }
+
+  if (status === "pre-start") {
+    return "Awaiting first report";
+  }
+
+  return "Tracker unavailable";
+}
+
 export default async function Home() {
   const now = new Date();
   const nextCrewPoint = getCrewPointSummary(now);
   const upcomingCheckpoints = getUpcomingCheckpoints(now, 5);
   const summitCheckpoints = getSummits();
   const crewPoints = getCrewPoints();
+  const trackerState = await getTrackerState();
   const weather = await getWeatherSummaries();
   const crewWeather = weather.filter((forecast) => forecast.kind === "crew");
   const summitWeatherByName = new Map(
@@ -351,7 +375,14 @@ export default async function Home() {
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
                     Live tracker
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold text-slate-950"></h2>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                    {getTrackerHeadline(trackerState.status)}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {trackerState.lastUpdatedAt
+                      ? `Last report ${formatDayClock(new Date(trackerState.lastUpdatedAt))}`
+                      : `Polling around every ${trackerState.reportIntervalSeconds} seconds until the tracker starts reporting.`}
+                  </p>
                 </div>
                 <a
                   className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-100 px-4 py-2 text-sm font-semibold text-sky-950 transition hover:border-sky-300 hover:bg-sky-200"
@@ -362,6 +393,36 @@ export default async function Home() {
                   <CrosshairSimple size={16} weight="bold" aria-hidden="true" />
                   Open tracker
                 </a>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                    Last checkpoint
+                  </p>
+                  <p className="mt-1 font-semibold text-slate-900">
+                    {trackerState.progress.lastCheckpoint?.name ??
+                      "Not reached yet"}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                    Next checkpoint
+                  </p>
+                  <p className="mt-1 font-semibold text-slate-900">
+                    {trackerState.progress.nextCheckpoint?.name ??
+                      "Waiting for route progress"}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
+                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                    Route progress
+                  </p>
+                  <p className="mt-1 font-semibold text-slate-900">
+                    {trackerState.progress.snappedDistanceKm === null
+                      ? "--"
+                      : `${trackerState.progress.snappedDistanceKm.toFixed(1)} km`}
+                  </p>
+                </div>
               </div>
               <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-100">
                 <iframe
