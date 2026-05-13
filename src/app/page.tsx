@@ -5,8 +5,10 @@ import {
   CloudRain,
   CloudSun,
   Drop,
+  Mountains,
   Snowflake,
   Sun,
+  UsersThree,
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
@@ -440,7 +442,8 @@ export default async function Home({ searchParams }: HomeProps) {
           >
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
+                <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
+                  <Mountains size={14} weight="bold" aria-hidden="true" />
                   Fell tops
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -464,7 +467,8 @@ export default async function Home({ searchParams }: HomeProps) {
           <article
             className={`${sectionCardClass} border-violet-200/80 bg-violet-50/90`}
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-700">
+            <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-violet-700">
+              <UsersThree size={14} weight="bold" aria-hidden="true" />
               Pacers by leg
             </p>
             <div className="mt-4 grid gap-3">
@@ -504,7 +508,8 @@ export default async function Home({ searchParams }: HomeProps) {
           <article
             className={`${sectionCardClass} border-cyan-200/80 bg-cyan-50/90`}
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-700">
+            <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-700">
+              <CloudSun size={14} weight="bold" aria-hidden="true" />
               Weather Forecast
             </p>
 

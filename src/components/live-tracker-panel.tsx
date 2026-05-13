@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-import { CrosshairSimple } from "@phosphor-icons/react/dist/ssr";
+import {
+  BatteryChargingVertical,
+  CrosshairSimple,
+  Timer,
+} from "@phosphor-icons/react/dist/ssr";
 
 import { trackerUrl } from "@/data/bgr-data";
 import { formatDayClock } from "@/lib/race";
@@ -150,7 +154,8 @@ export function LiveTrackerPanel({
     <article className={className}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
+          <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
+            <CrosshairSimple size={14} weight="bold" aria-hidden="true" />
             Live tracker
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -214,7 +219,8 @@ export function LiveTrackerPanel({
 
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl border border-sky-100/80 bg-white/75 px-4 py-3 text-sm text-slate-600">
         <div className="flex min-w-[12rem] flex-1 flex-col gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+            <Timer size={14} weight="bold" aria-hidden="true" />
             Tracker Freshness
           </span>
           <span className="whitespace-nowrap font-semibold text-slate-900">
@@ -224,7 +230,8 @@ export function LiveTrackerPanel({
         </div>
         <div className="hidden h-4 w-px bg-sky-100 sm:block" />
         <div className="flex min-w-[12rem] flex-1 flex-col gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+            <BatteryChargingVertical size={14} weight="bold" aria-hidden="true" />
             Battery
           </span>
           <span className="whitespace-nowrap font-semibold text-slate-900">

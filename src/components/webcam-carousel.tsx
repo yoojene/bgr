@@ -36,7 +36,8 @@ export function WebcamCarousel({ webcams, className }: Props) {
     <article className={className}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
+          <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
+            <Camera size={14} weight="bold" aria-hidden="true" />
             Webcams
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">
