@@ -311,7 +311,7 @@ export const changeoverLocations: ChangeoverLocation[] = [
     mapsUrl: "https://maps.app.goo.gl/RNrNdG9L2JvouWf68",
     notes: "Cricket Club Car Park. £5 via app.",
     coordinates: { latitude: 54.6181, longitude: -3.0552 },
-    runnerNote: "Fresh bottles, headtorch battery check, quick food swap, keep this under 10 minutes.",
+    runnerNote: "Fresh bottles, headtorch check, quick food swap, keep this under 10 minutes.",
   },
   {
     name: "Dunmail Raise",
@@ -319,7 +319,7 @@ export const changeoverLocations: ChangeoverLocation[] = [
     mapsUrl: "https://maps.app.goo.gl/T4uZH4NvnQJfwbDZA",
     notes: "Park on the verge side of the road.",
     coordinates: { latitude: 54.4659, longitude: -3.0254 },
-    runnerNote: "Warm layer ready if the tops are clagged in. Refill gels and check for early stomach issues.",
+    runnerNote: "Tea / coffee probably required especially if cold night.  Rice pudding as well.",
   },
   {
     name: "Wasdale NT CP",
@@ -327,7 +327,7 @@ export const changeoverLocations: ChangeoverLocation[] = [
     mapsUrl: "https://maps.app.goo.gl/n9c7UXTjYtcCwb52A",
     notes: "NT Car Park: £8 up to 4 hours, £9.50 all day.",
     coordinates: { latitude: 54.4547, longitude: -3.2708 },
-    runnerNote: "Major reset. Hot food, dry layers, feet check, and make the call on pacing for leg 4.",
+    runnerNote: "Major reset. Noodles definitely required, maybe dry layers too, feet check / possible sock change",
   },
   {
     name: "Honister Pass",
@@ -335,7 +335,7 @@ export const changeoverLocations: ChangeoverLocation[] = [
     mapsUrl: "https://maps.app.goo.gl/7gb2ZiDS2g15MS2z5",
     notes: "Slate Mine car park. £5 all day.",
     coordinates: { latitude: 54.5175, longitude: -3.2381 },
-    runnerNote: "Keep the stop tidy. Refill for the final leg and confirm whether I need caffeine before Robinson.",
+    runnerNote: "Refill for the final leg and confirm whether I need caffeine before Robinson.",
   },
   {
     name: "Newlands Church",
@@ -343,7 +343,7 @@ export const changeoverLocations: ChangeoverLocation[] = [
     mapsUrl: "https://maps.app.goo.gl/YrzrWAnyGg51nBFD8",
     notes: "Small car park just past the church over the beck. Likely free.",
     coordinates: { latitude: 54.5712, longitude: -3.1937 },
-    runnerNote: "Optional roadside morale stop if needed late on. Keep the final push moving.",
+    runnerNote: "Shoe change to roadies!",
   },
   {
     name: "Moot Hall",
