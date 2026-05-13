@@ -5,6 +5,9 @@ test("visible arrival times advance as the mocked tracker progresses", async ({
 }) => {
   await page.goto("/?mockStage=0");
 
+  await page.locator("summary").first().click();
+  await expect(page.getByText("21.0 km")).toBeVisible();
+
   await expect(page.getByTestId("checkpoint-actual-1-skiddaw")).toHaveText(
     "Waiting for tracker",
   );

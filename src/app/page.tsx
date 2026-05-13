@@ -205,6 +205,12 @@ export default async function Home({ searchParams }: HomeProps) {
     mockStage === null
       ? await getTrackerState()
       : getMockTrackerState(mockStage);
+  const routeDistanceByCheckpoint = new Map(
+    (trackerState.route?.checkpoints ?? []).map((checkpoint) => [
+      checkpoint.name,
+      checkpoint.routeDistanceKm,
+    ])
+  );
   const weather = await getWeatherSummaries();
   const crewWeather = weather.filter((forecast) => forecast.kind === "crew");
   const summitWeatherByName = new Map(
@@ -238,6 +244,10 @@ export default async function Home({ searchParams }: HomeProps) {
                 </p>
                 <div className="mt-2 grid gap-2">
                   {changeoverEntries.map((entry) => {
+                    const routeDistanceKm = routeDistanceByCheckpoint.get(
+                      entry.location.name
+                    );
+
                     return (
                       <Link
                         key={entry.slug}
@@ -248,11 +258,12 @@ export default async function Home({ searchParams }: HomeProps) {
                           <span className="text-sm font-semibold text-slate-900">
                             {entry.location.name}
                           </span>
-                          {/* <span className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-200/80">
-                            {checkpoint
-                              ? formatClock(getPlannedArrival(checkpoint))
-                              : "Stop"}
-                          </span> */}
+                          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                            {routeDistanceKm === null ||
+                            routeDistanceKm === undefined
+                              ? "Road"
+                              : `${routeDistanceKm.toFixed(1)} km`}
+                          </span>
                         </div>
                       </Link>
                     );

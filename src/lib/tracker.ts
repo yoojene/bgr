@@ -20,6 +20,10 @@ const trackerRoutesUrl = `https://track.trail.live/event/${trackerEventId}/route
 const trackerRevalidateSeconds = 120;
 const staleMultiplier = 3;
 
+const scheduledCourseCheckpoints = checkpoints.filter(
+  (checkpoint) => checkpoint.type !== "departure",
+);
+
 type TrackTrailRouteSummary = {
   id: number | null;
   name: string;
@@ -70,6 +74,15 @@ type TrackTrailRoute = {
   coords: TrackTrailRoutePoint[];
 };
 
+type TrackTrailParticipantCheckpoint = {
+  id: number;
+  name: string;
+  lat?: number | null;
+  lon?: number | null;
+  distance?: number | null;
+  elevation?: number | null;
+};
+
 export type TrackerStatus = "unavailable" | "pre-start" | "live" | "stale" | "retired";
 
 export type TrackerCheckpointSummary = {
@@ -107,6 +120,7 @@ export type TrackerState = {
     name: string;
     pointCount: number;
     checkpointCount: number;
+    checkpoints: TrackerCheckpointSummary[];
   } | null;
   progress: {
     snappedDistanceKm: number | null;
@@ -148,17 +162,53 @@ const routeCheckpointAliases = new Map<string, string>([
   ["start", "Moot Hall"],
   ["finish", "Moot Hall"],
   ["gtcalva", "Great Calva"],
+  ["gtdodd", "Great Dodd"],
   ["watsondodd", "Watson's Dodd"],
+  ["watsonsdod", "Watson's Dodd"],
+  ["stybarrowd", "Stybarrow Dodd"],
   ["seatsandal", "Seat Sandal"],
+  ["hellvelyn", "Helvellyn"],
+  ["nethermost", "Nethermost Pike"],
+  ["dollywagon", "Dollywagon Pike"],
+  ["dunmailra", "Dunmail Raise"],
+  ["sergentma", "Sergeant Man"],
+  ["thunacark", "Thurnacar Knott"],
+  ["harrisons", "Harrison Stickle"],
   ["pikeostickle", "Pike of Stickle"],
+  ["rossettpi", "Rossett Pike"],
+  ["bowfell", "Bowfell"],
+  ["scafellpi", "Scafell Pike"],
+  ["wasdalecp", "Wasdale NT CP"],
   ["wasdalecampcarpark", "Wasdale NT CP"],
+  ["greatgabl", "Great Gable"],
+  ["greygabl", "Green Gable"],
+  ["greyknott", "Grey Knotts"],
+  ["honisterc", "Honister Pass"],
   ["honisteryhacarpark", "Honister Pass"],
   ["hindscrath", "Hindscarth"],
+  ["dalehead", "Dale Head"],
 ]);
 
 const checkpointByName = new Map<string, Checkpoint>(
   checkpoints.map((checkpoint) => [normalizeCheckpointName(checkpoint.name), checkpoint]),
 );
+
+const scheduledCourseCheckpointIndexByName = new Map(
+  scheduledCourseCheckpoints.map((checkpoint, index) => [checkpoint.name, index]),
+);
+
+function getTrackerParticipantCheckpointsUrl(
+  participantId: number,
+  routeId: number | null,
+) {
+  const searchParams = new URLSearchParams();
+
+  if (routeId !== null) {
+    searchParams.set("route", String(routeId));
+  }
+
+  return `https://track.trail.live/event/${trackerEventId}/participants/${participantId}/checkpoints?${searchParams.toString()}`;
+}
 
 function findScheduledCheckpoint(routeCheckpointName: string) {
   const normalizedName = normalizeCheckpointName(routeCheckpointName);
@@ -223,6 +273,7 @@ function selectRoute(
 function toCheckpointSummary(
   routeCheckpointName: string,
   routeDistanceKm: number | null,
+  checkpointDistanceByName?: Map<string, number | null>,
 ): TrackerCheckpointSummary | null {
   const checkpoint = findScheduledCheckpoint(routeCheckpointName);
 
@@ -235,13 +286,101 @@ function toCheckpointSummary(
     leg: checkpoint.leg,
     type: checkpoint.type,
     plannedArrivalIso: getPlannedArrival(checkpoint).toISOString(),
-    routeDistanceKm,
+    routeDistanceKm: checkpointDistanceByName?.get(checkpoint.name) ?? routeDistanceKm,
   };
+}
+
+function buildRouteCheckpointDistanceMap(route: TrackTrailRoute | null) {
+  const checkpointDistanceByName = new Map<string, number | null>();
+
+  if (!route) {
+    return checkpointDistanceByName;
+  }
+
+  for (const point of route.coords) {
+    if (typeof point.checkpoint !== "string" || point.checkpoint.trim().length === 0) {
+      continue;
+    }
+
+    const checkpoint = findScheduledCheckpoint(point.checkpoint);
+
+    if (checkpoint) {
+      checkpointDistanceByName.set(checkpoint.name, point.dist ?? null);
+    }
+  }
+
+  return checkpointDistanceByName;
+}
+
+function buildParticipantCheckpointDistanceMap(
+  participantCheckpoints: TrackTrailParticipantCheckpoint[],
+) {
+  const checkpointDistanceByName = new Map<string, number | null>();
+  const matchedCheckpointNames = new Set<string>();
+
+  for (const [index, participantCheckpoint] of participantCheckpoints.entries()) {
+    const expectedCheckpoint = scheduledCourseCheckpoints[index] ?? null;
+    const matchedCheckpoint = findScheduledCheckpoint(participantCheckpoint.name);
+    const matchedCheckpointIndex = matchedCheckpoint
+      ? scheduledCourseCheckpointIndexByName.get(matchedCheckpoint.name)
+      : undefined;
+
+    let resolvedCheckpoint: Checkpoint | null = null;
+
+    if (
+      matchedCheckpoint &&
+      matchedCheckpoint.type !== "departure" &&
+      !matchedCheckpointNames.has(matchedCheckpoint.name) &&
+      matchedCheckpointIndex !== undefined &&
+      Math.abs(matchedCheckpointIndex - index) <= 1
+    ) {
+      resolvedCheckpoint = matchedCheckpoint;
+    } else if (
+      expectedCheckpoint &&
+      !matchedCheckpointNames.has(expectedCheckpoint.name)
+    ) {
+      resolvedCheckpoint = expectedCheckpoint;
+    } else if (
+      matchedCheckpoint &&
+      matchedCheckpoint.type !== "departure" &&
+      !matchedCheckpointNames.has(matchedCheckpoint.name)
+    ) {
+      resolvedCheckpoint = matchedCheckpoint;
+    }
+
+    if (!resolvedCheckpoint) {
+      continue;
+    }
+
+    matchedCheckpointNames.add(resolvedCheckpoint.name);
+    checkpointDistanceByName.set(
+      resolvedCheckpoint.name,
+      participantCheckpoint.distance ?? null,
+    );
+  }
+
+  return checkpointDistanceByName;
+}
+
+function buildCheckpointDistanceMap(
+  route: TrackTrailRoute | null,
+  participantCheckpoints: TrackTrailParticipantCheckpoint[],
+) {
+  const checkpointDistanceByName = buildRouteCheckpointDistanceMap(route);
+
+  for (const [name, distanceKm] of buildParticipantCheckpointDistanceMap(
+    participantCheckpoints,
+  )) {
+    checkpointDistanceByName.set(name, distanceKm);
+  }
+
+  return checkpointDistanceByName;
 }
 
 function buildProgress(
   route: TrackTrailRoute | null,
   lastReport: TrackTrailReport | null,
+  checkpointDistanceByName: Map<string, number | null>,
 ) {
   if (!route || !lastReport || route.coords.length === 0) {
     return {
@@ -297,16 +436,62 @@ function buildProgress(
     totalDistanceKm,
     distanceToRouteMeters: nearestPoint?.elev ?? null,
     lastCheckpoint: lastNamedCheckpoint
-      ? toCheckpointSummary(lastNamedCheckpoint.checkpoint, lastNamedCheckpoint.dist ?? null)
+      ? toCheckpointSummary(
+          lastNamedCheckpoint.checkpoint,
+          lastNamedCheckpoint.dist ?? null,
+          checkpointDistanceByName,
+        )
       : null,
     nextCheckpoint: nextNamedCheckpoint
-      ? toCheckpointSummary(nextNamedCheckpoint.checkpoint, nextNamedCheckpoint.dist ?? null)
+      ? toCheckpointSummary(
+          nextNamedCheckpoint.checkpoint,
+          nextNamedCheckpoint.dist ?? null,
+          checkpointDistanceByName,
+        )
       : null,
     distanceToNextCheckpointKm:
-      snappedDistanceKm !== null && nextNamedCheckpoint?.dist !== undefined && nextNamedCheckpoint?.dist !== null
-        ? Math.max(0, nextNamedCheckpoint.dist - snappedDistanceKm)
+      snappedDistanceKm !== null && nextNamedCheckpoint
+        ? Math.max(
+            0,
+            (toCheckpointSummary(
+              nextNamedCheckpoint.checkpoint,
+              nextNamedCheckpoint.dist ?? null,
+              checkpointDistanceByName,
+            )?.routeDistanceKm ?? nextNamedCheckpoint.dist ?? 0) - snappedDistanceKm,
+          )
         : null,
   };
+}
+
+function getRouteCheckpointSummaries(
+  route: TrackTrailRoute | null,
+  checkpointDistanceByName: Map<string, number | null>,
+) {
+  if (!route) {
+    return [] as TrackerCheckpointSummary[];
+  }
+
+  const summariesByName = new Map<string, TrackerCheckpointSummary>();
+
+  for (const point of route.coords) {
+    if (typeof point.checkpoint !== "string" || point.checkpoint.trim().length === 0) {
+      continue;
+    }
+
+    const summary = toCheckpointSummary(
+      point.checkpoint,
+      point.dist ?? null,
+      checkpointDistanceByName,
+    );
+
+    if (summary) {
+      summariesByName.set(summary.name, summary);
+    }
+  }
+
+  return checkpoints
+    .map((checkpoint) => summariesByName.get(checkpoint.name))
+    .filter((summary): summary is TrackerCheckpointSummary => Boolean(summary));
 }
 
 function inferCheckpointArrivals(
@@ -314,6 +499,7 @@ function inferCheckpointArrivals(
   progress: ReturnType<typeof buildProgress>,
   lastUpdatedAt: string | null,
   existingArrivals: StoredTrackerArrival[],
+  checkpointDistanceByName: Map<string, number | null>,
 ) {
   if (!route || progress.snappedDistanceKm === null || !lastUpdatedAt) {
     return existingArrivals;
@@ -328,22 +514,24 @@ function inferCheckpointArrivals(
         typeof point.checkpoint === "string" && point.checkpoint.trim().length > 0,
     )
     .map((point) => ({
-      routeDistanceKm: point.dist ?? null,
-      summary: toCheckpointSummary(point.checkpoint, point.dist ?? null),
+      summary: toCheckpointSummary(
+        point.checkpoint,
+        point.dist ?? null,
+        checkpointDistanceByName,
+      ),
     }))
     .filter(
       (
         checkpoint,
       ): checkpoint is {
-        routeDistanceKm: number | null;
         summary: TrackerCheckpointSummary;
       } => Boolean(checkpoint.summary),
     );
 
   for (const checkpoint of routeCheckpointSummaries) {
     if (
-      checkpoint.routeDistanceKm !== null &&
-      checkpoint.routeDistanceKm <= progress.snappedDistanceKm &&
+      checkpoint.summary.routeDistanceKm !== null &&
+      checkpoint.summary.routeDistanceKm <= progress.snappedDistanceKm &&
       !arrivalsByCheckpoint.has(checkpoint.summary.name)
     ) {
       arrivalsByCheckpoint.set(checkpoint.summary.name, {
@@ -382,6 +570,21 @@ export async function getTrackerState(): Promise<TrackerState> {
   const routesPayload = routesResult.status === "fulfilled" ? routesResult.value : [];
   const participant = participantPayload ? selectParticipant(participantPayload) : null;
   const route = selectRoute(routesPayload, participant);
+  const participantCheckpointsResult =
+    participant?.id !== null && participant?.id !== undefined
+      ? await Promise.allSettled([
+          fetchJson<TrackTrailParticipantCheckpoint[]>(
+            getTrackerParticipantCheckpointsUrl(
+              participant.id,
+              route?.id ?? participant.routes[0]?.id ?? trackerRouteId,
+            ),
+          ),
+        ])
+      : [];
+  const participantCheckpoints =
+    participantCheckpointsResult[0]?.status === "fulfilled"
+      ? participantCheckpointsResult[0].value
+      : [];
   const lastReport = participant?.lastReport ?? null;
   const lastUpdatedAt = toIsoString(lastReport?.timestamp);
   const existingArrivals = await listTrackerArrivals();
@@ -396,12 +599,21 @@ export async function getTrackerState(): Promise<TrackerState> {
           ? fetchedAt.getTime() - parsedLastUpdatedAt.getTime() > staleThresholdMilliseconds
           : false);
 
-  const progress = buildProgress(route, lastReport);
+  const checkpointDistanceByName = buildCheckpointDistanceMap(
+    route,
+    participantCheckpoints,
+  );
+  const progress = buildProgress(route, lastReport, checkpointDistanceByName);
+  const routeCheckpoints = getRouteCheckpointSummaries(
+    route,
+    checkpointDistanceByName,
+  );
   const arrivals = inferCheckpointArrivals(
     route,
     progress,
     lastUpdatedAt,
     existingArrivals,
+    checkpointDistanceByName,
   );
 
   if (arrivals.length > existingArrivals.length) {
@@ -448,8 +660,15 @@ export async function getTrackerState(): Promise<TrackerState> {
           name: route.name,
           pointCount: route.coords.length,
           checkpointCount: route.coords.filter((point) => point.checkpoint).length,
+          checkpoints: routeCheckpoints,
         }
-      : null,
+      : {
+          id: null,
+          name: "",
+          pointCount: 0,
+          checkpointCount: 0,
+          checkpoints: [],
+        },
     progress,
     arrivals,
     source: {
