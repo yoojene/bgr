@@ -68,7 +68,7 @@ function getBatterySummary(battery: number | null) {
   if (battery === null) {
     return {
       value: "--",
-      detail: "Battery telemetry not reported by the device.",
+      detail: "Battery level not reported by the device.",
     };
   }
 
@@ -159,7 +159,7 @@ export function LiveTrackerPanel({
           <p className="mt-2 text-sm leading-6 text-slate-600">
             {trackerState.lastUpdatedAt
               ? `Last report ${formatDayClock(new Date(trackerState.lastUpdatedAt))}`
-              : `Polling around every ${trackerState.reportIntervalSeconds} seconds until the tracker starts reporting.`}
+              : ``}
           </p>
         </div>
         <a
@@ -173,47 +173,29 @@ export function LiveTrackerPanel({
         </a>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-            Freshness
-          </p>
-          <p className="mt-1 font-semibold text-slate-900">{freshness.value}</p>
-          <p className="mt-1 text-sm leading-5 text-slate-600">
-            {freshness.detail}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
-          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-            Battery
-          </p>
-          <p className="mt-1 font-semibold text-slate-900">{battery.value}</p>
-          <p className="mt-1 text-sm leading-5 text-slate-600">
-            {battery.detail}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-[1.5rem] border border-sky-200 bg-white p-4 shadow-[0_12px_28px_rgba(14,116,144,0.08)]">
           <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
             Last checkpoint
           </p>
-          <p className="mt-1 font-semibold text-slate-900">
+          <p className="mt-2 text-xl font-semibold text-slate-950">
             {trackerState.progress.lastCheckpoint?.name ?? "Not reached yet"}
           </p>
-          <p className="mt-1 text-sm leading-5 text-slate-600">
+          <p className="mt-2 text-sm leading-6 text-slate-600">
             {trackerState.progress.lastCheckpoint?.plannedArrivalIso
               ? `Planned ${formatDayClock(new Date(trackerState.progress.lastCheckpoint.plannedArrivalIso))}`
               : "No checkpoint reached yet."}
           </p>
         </div>
-        <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
+        <div className="rounded-[1.5rem] border border-sky-200 bg-white p-4 shadow-[0_12px_28px_rgba(14,116,144,0.08)]">
           <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
             Next checkpoint
           </p>
-          <p className="mt-1 font-semibold text-slate-900">
+          <p className="mt-2 text-xl font-semibold text-slate-950">
             {trackerState.progress.nextCheckpoint?.name ??
               "Waiting for route progress"}
           </p>
-          <p className="mt-1 text-sm leading-5 text-slate-600">
+          <p className="mt-2 text-sm leading-6 text-slate-600">
             {trackerState.progress.distanceToNextCheckpointKm === null
               ? "Distance will appear once route progress is available."
               : `${trackerState.progress.distanceToNextCheckpointKm.toFixed(1)} km to go.`}
@@ -221,13 +203,35 @@ export function LiveTrackerPanel({
         </div>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-100">
+      <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-100 shadow-[0_14px_32px_rgba(15,23,42,0.08)]">
         <iframe
           title="Trail Live tracker"
           src={trackerUrl}
           className="h-[480px] w-full"
           allow="geolocation"
         />
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl border border-sky-100/80 bg-white/75 px-4 py-3 text-sm text-slate-600">
+        <div className="flex min-w-[12rem] flex-1 flex-col gap-1">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+            Tracker Freshness
+          </span>
+          <span className="whitespace-nowrap font-semibold text-slate-900">
+            {freshness.value}
+          </span>
+          <span>{freshness.detail}</span>
+        </div>
+        <div className="hidden h-4 w-px bg-sky-100 sm:block" />
+        <div className="flex min-w-[12rem] flex-1 flex-col gap-1">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+            Battery
+          </span>
+          <span className="whitespace-nowrap font-semibold text-slate-900">
+            {battery.value}
+          </span>
+          <span>{battery.detail}</span>
+        </div>
       </div>
     </article>
   );
