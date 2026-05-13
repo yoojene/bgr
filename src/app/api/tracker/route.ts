@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 
+import { getMockTrackerState, parseMockTrackerStage } from "@/lib/tracker-mock";
 import { getTrackerState } from "@/lib/tracker";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    return NextResponse.json(await getTrackerState());
+    const { searchParams } = new URL(request.url);
+    const mockStage = parseMockTrackerStage(searchParams.get("mockStage"));
+
+    return NextResponse.json(
+      mockStage === null ? await getTrackerState() : getMockTrackerState(mockStage),
+    );
   } catch (error) {
     return NextResponse.json(
       {

@@ -11,11 +11,13 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
+import { LiveCheckpointArrivals } from "@/components/live-checkpoint-arrivals";
 import { LiveCountdown } from "@/components/live-countdown";
 import { LiveTrackerPanel } from "@/components/live-tracker-panel";
 import { WebcamCarousel } from "@/components/webcam-carousel";
 import { pacerLegs } from "@/data/bgr-data";
 import { changeoverEntries } from "@/lib/changeovers";
+import { getMockTrackerState, parseMockTrackerStage } from "@/lib/tracker-mock";
 import {
   formatClock,
   formatDayClock,
@@ -34,6 +36,12 @@ import {
   getWeatherSummaries,
   type WeatherSummary,
 } from "@/lib/weather";
+
+type HomeProps = {
+  searchParams: Promise<{
+    mockStage?: string | string[];
+  }>;
+};
 
 const statCardClass =
   "rounded-[1.75rem] border border-white/60 bg-white/85 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur";
@@ -118,28 +126,6 @@ function getWeatherConditionIcon(code: number | null) {
   return <Cloud size={14} weight="bold" aria-hidden="true" />;
 }
 
-function getRenderedCheckpointStatus(
-  actualArrival: string | null,
-  plannedArrival: Date,
-  now: Date
-) {
-  if (actualArrival) {
-    return "Reached";
-  }
-
-  const delta = Math.round((plannedArrival.getTime() - now.getTime()) / 60000);
-
-  if (delta < 0) {
-    return "Awaiting tracker";
-  }
-
-  if (delta <= 45) {
-    return "Due soon";
-  }
-
-  return "Upcoming";
-}
-
 function WeatherCard({
   forecast,
   compact = false,
@@ -208,19 +194,17 @@ function WeatherCard({
   );
 }
 
-export default async function Home() {
-  const now = new Date();
-  const nextCrewPoint = getCrewPointSummary(now);
-  const upcomingCheckpoints = getUpcomingCheckpoints(now, 5);
+export default async function Home({ searchParams }: HomeProps) {
+  const resolvedSearchParams = await searchParams;
+  const mockStage = parseMockTrackerStage(resolvedSearchParams.mockStage);
+  const nextCrewPoint = getCrewPointSummary(new Date());
+  const upcomingCheckpoints = getUpcomingCheckpoints(new Date(), 5);
   const summitCheckpoints = getSummits();
   const crewPoints = getCrewPoints();
-  const trackerState = await getTrackerState();
-  const trackerArrivalsByCheckpoint = new Map(
-    trackerState.arrivals.map((arrival) => [
-      arrival.checkpointName,
-      arrival.arrivedAt,
-    ])
-  );
+  const trackerState =
+    mockStage === null
+      ? await getTrackerState()
+      : getMockTrackerState(mockStage);
   const weather = await getWeatherSummaries();
   const crewWeather = weather.filter((forecast) => forecast.kind === "crew");
   const summitWeatherByName = new Map(
@@ -331,41 +315,41 @@ export default async function Home() {
                   On the fells
                 </div>
               </div>
-            </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
-                <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
-                  Start
-                </p>
-                <p className="mt-2 text-xl font-semibold">
-                  {formatDayClock(raceStart)}
-                </p>
-                <p className="mt-1 text-sm text-slate-300">
-                  Moot Hall, Keswick
-                </p>
-              </div>
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
-                <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
-                  Cutoff
-                </p>
-                <p className="mt-2 text-xl font-semibold">
-                  {formatDayClock(raceCutoff)}
-                </p>
-                <p className="mt-1 text-sm text-slate-300">
-                  24-hour round limit
-                </p>
-              </div>
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
-                <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
-                  Plan
-                </p>
-                <p className="mt-2 text-xl font-semibold">
-                  {formatDuration(1317)}
-                </p>
-                <p className="mt-1 text-sm text-slate-300">
-                  22-hour schedule with margin
-                </p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
+                    Start
+                  </p>
+                  <p className="mt-2 text-xl font-semibold">
+                    {formatDayClock(raceStart)}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-300">
+                    Moot Hall, Keswick
+                  </p>
+                </div>
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
+                    Cutoff
+                  </p>
+                  <p className="mt-2 text-xl font-semibold">
+                    {formatDayClock(raceCutoff)}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-300">
+                    24-hour round limit
+                  </p>
+                </div>
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-300">
+                    Plan
+                  </p>
+                  <p className="mt-2 text-xl font-semibold">
+                    {formatDuration(1317)}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-300">
+                    22-hour schedule with margin
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -373,6 +357,9 @@ export default async function Home() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
             <LiveTrackerPanel
               initialState={trackerState}
+              requestSuffix={
+                mockStage === null ? "" : `?mockStage=${mockStage}`
+              }
               className={`${sectionCardClass} overflow-hidden border-sky-200/80 bg-sky-50/90`}
             />
 
@@ -465,66 +452,13 @@ export default async function Home() {
               </span>
             </div>
 
-            <div className="mt-4 max-h-[720px] space-y-3 overflow-y-auto pr-1">
-              {summitCheckpoints.map((checkpoint) => {
-                const actualArrival =
-                  trackerArrivalsByCheckpoint.get(checkpoint.name) ?? null;
-                const plannedArrival = getPlannedArrival(checkpoint);
-
-                return (
-                  <div
-                    key={checkpoint.id}
-                    className="rounded-2xl border border-emerald-100 bg-white/90 p-4"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <h3 className="font-semibold text-slate-900">
-                          {checkpoint.name}
-                        </h3>
-                        <p className="mt-1 text-sm text-slate-600">
-                          Leg {checkpoint.leg}
-                        </p>
-                      </div>
-                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-800">
-                        {getRenderedCheckpointStatus(
-                          actualArrival,
-                          plannedArrival,
-                          now
-                        )}
-                      </span>
-                    </div>
-                    <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-                      <div className="rounded-2xl bg-emerald-100/75 p-3">
-                        <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                          ETA
-                        </p>
-                        <p className="mt-1 font-semibold text-slate-900">
-                          {formatClock(plannedArrival)}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl bg-emerald-100/75 p-3">
-                        <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                          Actual
-                        </p>
-                        <p className="mt-1 font-semibold text-slate-900">
-                          {actualArrival
-                            ? formatDayClock(new Date(actualArrival))
-                            : "Waiting for tracker"}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl bg-emerald-100/75 p-3">
-                        <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                          Elapsed
-                        </p>
-                        <p className="mt-1 font-semibold text-slate-900">
-                          {formatDuration(checkpoint.cumulativeMinutes)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <LiveCheckpointArrivals
+              checkpoints={summitCheckpoints}
+              initialArrivals={trackerState.arrivals}
+              requestSuffix={
+                mockStage === null ? "" : `?mockStage=${mockStage}`
+              }
+            />
           </article>
 
           <article

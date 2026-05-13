@@ -95,9 +95,14 @@ function getBatterySummary(battery: number | null) {
 type Props = {
   initialState: TrackerState;
   className: string;
+  requestSuffix?: string;
 };
 
-export function LiveTrackerPanel({ initialState, className }: Props) {
+export function LiveTrackerPanel({
+  initialState,
+  className,
+  requestSuffix = "",
+}: Props) {
   const [trackerState, setTrackerState] = useState(initialState);
   const freshness = getFreshnessSummary(trackerState);
   const battery = getBatterySummary(trackerState.lastReport?.battery ?? null);
@@ -107,7 +112,9 @@ export function LiveTrackerPanel({ initialState, className }: Props) {
 
     async function refreshTrackerState() {
       try {
-        const response = await fetch("/api/tracker", { cache: "no-store" });
+        const response = await fetch(`/api/tracker${requestSuffix}`, {
+          cache: "no-store",
+        });
 
         if (!response.ok) {
           throw new Error("Unable to refresh tracker state");
@@ -123,6 +130,8 @@ export function LiveTrackerPanel({ initialState, className }: Props) {
       }
     }
 
+    void refreshTrackerState();
+
     const pollIntervalMilliseconds = Math.max(
       30000,
       trackerState.reportIntervalSeconds * 1000
@@ -135,7 +144,7 @@ export function LiveTrackerPanel({ initialState, className }: Props) {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [trackerState.reportIntervalSeconds]);
+  }, [trackerState.reportIntervalSeconds, requestSuffix]);
 
   return (
     <article className={className}>
