@@ -8,3 +8,11 @@ create table if not exists crew_notes (
 
 create index if not exists crew_notes_checkpoint_name_idx
   on crew_notes (checkpoint_name, updated_at desc);
+
+create table if not exists tracker_checkpoint_arrivals (
+  checkpoint_name text primary key,
+  arrived_at timestamptz not null
+);
+
+create index if not exists tracker_checkpoint_arrivals_arrived_at_idx
+  on tracker_checkpoint_arrivals (arrived_at asc);

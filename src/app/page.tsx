@@ -4,7 +4,6 @@ import {
   CloudLightning,
   CloudRain,
   CloudSun,
-  CrosshairSimple,
   Drop,
   Snowflake,
   Sun,
@@ -13,18 +12,17 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { LiveCountdown } from "@/components/live-countdown";
+import { LiveTrackerPanel } from "@/components/live-tracker-panel";
 import { WebcamCarousel } from "@/components/webcam-carousel";
-import { pacerLegs, trackerUrl } from "@/data/bgr-data";
+import { pacerLegs } from "@/data/bgr-data";
 import { changeoverEntries } from "@/lib/changeovers";
 import {
   formatClock,
   formatDayClock,
   formatDuration,
-  getCheckpointStatus,
   getCrewPointSummary,
   getCrewPoints,
   getPlannedArrival,
-  getRouteCompletion,
   getSummits,
   getUpcomingCheckpoints,
   raceCutoff,
@@ -120,6 +118,28 @@ function getWeatherConditionIcon(code: number | null) {
   return <Cloud size={14} weight="bold" aria-hidden="true" />;
 }
 
+function getRenderedCheckpointStatus(
+  actualArrival: string | null,
+  plannedArrival: Date,
+  now: Date
+) {
+  if (actualArrival) {
+    return "Reached";
+  }
+
+  const delta = Math.round((plannedArrival.getTime() - now.getTime()) / 60000);
+
+  if (delta < 0) {
+    return "Awaiting tracker";
+  }
+
+  if (delta <= 45) {
+    return "Due soon";
+  }
+
+  return "Upcoming";
+}
+
 function WeatherCard({
   forecast,
   compact = false,
@@ -188,28 +208,6 @@ function WeatherCard({
   );
 }
 
-function getTrackerHeadline(
-  status: Awaited<ReturnType<typeof getTrackerState>>["status"]
-) {
-  if (status === "live") {
-    return "Tracker live";
-  }
-
-  if (status === "stale") {
-    return "Tracker stale";
-  }
-
-  if (status === "retired") {
-    return "Tracker retired";
-  }
-
-  if (status === "pre-start") {
-    return "Awaiting first report";
-  }
-
-  return "Tracker unavailable";
-}
-
 export default async function Home() {
   const now = new Date();
   const nextCrewPoint = getCrewPointSummary(now);
@@ -217,6 +215,12 @@ export default async function Home() {
   const summitCheckpoints = getSummits();
   const crewPoints = getCrewPoints();
   const trackerState = await getTrackerState();
+  const trackerArrivalsByCheckpoint = new Map(
+    trackerState.arrivals.map((arrival) => [
+      arrival.checkpointName,
+      arrival.arrivedAt,
+    ])
+  );
   const weather = await getWeatherSummaries();
   const crewWeather = weather.filter((forecast) => forecast.kind === "crew");
   const summitWeatherByName = new Map(
@@ -367,72 +371,10 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-            <article
+            <LiveTrackerPanel
+              initialState={trackerState}
               className={`${sectionCardClass} overflow-hidden border-sky-200/80 bg-sky-50/90`}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
-                    Live tracker
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-                    {getTrackerHeadline(trackerState.status)}
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    {trackerState.lastUpdatedAt
-                      ? `Last report ${formatDayClock(new Date(trackerState.lastUpdatedAt))}`
-                      : `Polling around every ${trackerState.reportIntervalSeconds} seconds until the tracker starts reporting.`}
-                  </p>
-                </div>
-                <a
-                  className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-100 px-4 py-2 text-sm font-semibold text-sky-950 transition hover:border-sky-300 hover:bg-sky-200"
-                  href={trackerUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <CrosshairSimple size={16} weight="bold" aria-hidden="true" />
-                  Open tracker
-                </a>
-              </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                    Last checkpoint
-                  </p>
-                  <p className="mt-1 font-semibold text-slate-900">
-                    {trackerState.progress.lastCheckpoint?.name ??
-                      "Not reached yet"}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                    Next checkpoint
-                  </p>
-                  <p className="mt-1 font-semibold text-slate-900">
-                    {trackerState.progress.nextCheckpoint?.name ??
-                      "Waiting for route progress"}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
-                  <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                    Route progress
-                  </p>
-                  <p className="mt-1 font-semibold text-slate-900">
-                    {trackerState.progress.snappedDistanceKm === null
-                      ? "--"
-                      : `${trackerState.progress.snappedDistanceKm.toFixed(1)} km`}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-100">
-                <iframe
-                  title="Trail Live tracker"
-                  src={trackerUrl}
-                  className="h-[480px] w-full"
-                  allow="geolocation"
-                />
-              </div>
-            </article>
+            />
 
             <article
               className={`${statCardClass} border-sky-200/80 bg-sky-50/90`}
@@ -454,12 +396,16 @@ export default async function Home() {
                 Route completion
               </p>
               <h2 className="mt-3 text-3xl font-semibold text-slate-950">
-                {getRouteCompletion(now)}
+                {trackerState.progress.completionPercent === null
+                  ? "--"
+                  : `${trackerState.progress.completionPercent.toFixed(1)}%`}
               </h2>
-              {/* <p className="mt-2 text-sm leading-6 text-slate-600">
-                Progress is currently plan-based until tracker checkpoint
-                ingestion is added.
-              </p> */}
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {trackerState.progress.snappedDistanceKm !== null &&
+                trackerState.progress.totalDistanceKm !== null
+                  ? `${trackerState.progress.snappedDistanceKm.toFixed(1)} km of ${trackerState.progress.totalDistanceKm.toFixed(1)} km on the official route.`
+                  : "Waiting for live route progress from the tracker."}
+              </p>
             </article>
           </div>
         </section>
@@ -520,52 +466,64 @@ export default async function Home() {
             </div>
 
             <div className="mt-4 max-h-[720px] space-y-3 overflow-y-auto pr-1">
-              {summitCheckpoints.map((checkpoint) => (
-                <div
-                  key={checkpoint.id}
-                  className="rounded-2xl border border-emerald-100 bg-white/90 p-4"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-semibold text-slate-900">
-                        {checkpoint.name}
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-600">
-                        Leg {checkpoint.leg}
-                      </p>
+              {summitCheckpoints.map((checkpoint) => {
+                const actualArrival =
+                  trackerArrivalsByCheckpoint.get(checkpoint.name) ?? null;
+                const plannedArrival = getPlannedArrival(checkpoint);
+
+                return (
+                  <div
+                    key={checkpoint.id}
+                    className="rounded-2xl border border-emerald-100 bg-white/90 p-4"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold text-slate-900">
+                          {checkpoint.name}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-600">
+                          Leg {checkpoint.leg}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-800">
+                        {getRenderedCheckpointStatus(
+                          actualArrival,
+                          plannedArrival,
+                          now
+                        )}
+                      </span>
                     </div>
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-800">
-                      {getCheckpointStatus(checkpoint, now)}
-                    </span>
+                    <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+                      <div className="rounded-2xl bg-emerald-100/75 p-3">
+                        <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                          ETA
+                        </p>
+                        <p className="mt-1 font-semibold text-slate-900">
+                          {formatClock(plannedArrival)}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-emerald-100/75 p-3">
+                        <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                          Actual
+                        </p>
+                        <p className="mt-1 font-semibold text-slate-900">
+                          {actualArrival
+                            ? formatDayClock(new Date(actualArrival))
+                            : "Waiting for tracker"}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-emerald-100/75 p-3">
+                        <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                          Elapsed
+                        </p>
+                        <p className="mt-1 font-semibold text-slate-900">
+                          {formatDuration(checkpoint.cumulativeMinutes)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-                    <div className="rounded-2xl bg-emerald-100/75 p-3">
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                        ETA
-                      </p>
-                      <p className="mt-1 font-semibold text-slate-900">
-                        {formatClock(getPlannedArrival(checkpoint))}
-                      </p>
-                    </div>
-                    <div className="rounded-2xl bg-emerald-100/75 p-3">
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                        Actual
-                      </p>
-                      <p className="mt-1 font-semibold text-slate-900">
-                        {checkpoint.actualArrival ?? "Waiting for tracker"}
-                      </p>
-                    </div>
-                    <div className="rounded-2xl bg-emerald-100/75 p-3">
-                      <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                        Elapsed
-                      </p>
-                      <p className="mt-1 font-semibold text-slate-900">
-                        {formatDuration(checkpoint.cumulativeMinutes)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </article>
 

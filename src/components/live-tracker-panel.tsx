@@ -1,0 +1,225 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { CrosshairSimple } from "@phosphor-icons/react/dist/ssr";
+
+import { trackerUrl } from "@/data/bgr-data";
+import { formatDayClock } from "@/lib/race";
+import type { TrackerState } from "@/lib/tracker";
+
+function getTrackerHeadline(status: TrackerState["status"]) {
+  if (status === "live") {
+    return "Tracker live";
+  }
+
+  if (status === "stale") {
+    return "Tracker stale";
+  }
+
+  if (status === "retired") {
+    return "Tracker retired";
+  }
+
+  if (status === "pre-start") {
+    return "Awaiting first report";
+  }
+
+  return "Tracker unavailable";
+}
+
+function getFreshnessSummary(trackerState: TrackerState) {
+  if (trackerState.status === "retired") {
+    return {
+      value: "Retired",
+      detail: "Tracker has stopped because the round is marked retired.",
+    };
+  }
+
+  if (!trackerState.lastUpdatedAt) {
+    return {
+      value: "Waiting",
+      detail: `Polling every ${trackerState.reportIntervalSeconds} seconds for the first report.`,
+    };
+  }
+
+  const minutesSinceUpdate = Math.max(
+    0,
+    Math.round(
+      (Date.now() - new Date(trackerState.lastUpdatedAt).getTime()) / 60000
+    )
+  );
+
+  if (trackerState.status === "stale") {
+    return {
+      value: `${minutesSinceUpdate} min old`,
+      detail: "Later than expected for the configured tracker interval.",
+    };
+  }
+
+  return {
+    value:
+      minutesSinceUpdate === 0 ? "Live now" : `${minutesSinceUpdate} min ago`,
+    detail: `Expected roughly every ${trackerState.reportIntervalSeconds} seconds.`,
+  };
+}
+
+function getBatterySummary(battery: number | null) {
+  if (battery === null) {
+    return {
+      value: "--",
+      detail: "Battery telemetry not reported by the device.",
+    };
+  }
+
+  if (battery <= 20) {
+    return {
+      value: `${battery}%`,
+      detail: "Low battery. Keep an eye on tracker longevity.",
+    };
+  }
+
+  if (battery <= 50) {
+    return {
+      value: `${battery}%`,
+      detail: "Mid battery. Still healthy, but no longer full.",
+    };
+  }
+
+  return {
+    value: `${battery}%`,
+    detail: "Battery level looks healthy.",
+  };
+}
+
+type Props = {
+  initialState: TrackerState;
+  className: string;
+};
+
+export function LiveTrackerPanel({ initialState, className }: Props) {
+  const [trackerState, setTrackerState] = useState(initialState);
+  const freshness = getFreshnessSummary(trackerState);
+  const battery = getBatterySummary(trackerState.lastReport?.battery ?? null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function refreshTrackerState() {
+      try {
+        const response = await fetch("/api/tracker", { cache: "no-store" });
+
+        if (!response.ok) {
+          throw new Error("Unable to refresh tracker state");
+        }
+
+        const payload = (await response.json()) as TrackerState;
+
+        if (!cancelled) {
+          setTrackerState(payload);
+        }
+      } catch {
+        return;
+      }
+    }
+
+    const pollIntervalMilliseconds = Math.max(
+      30000,
+      trackerState.reportIntervalSeconds * 1000
+    );
+    const interval = window.setInterval(() => {
+      void refreshTrackerState();
+    }, pollIntervalMilliseconds);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [trackerState.reportIntervalSeconds]);
+
+  return (
+    <article className={className}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-700">
+            Live tracker
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+            {getTrackerHeadline(trackerState.status)}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {trackerState.lastUpdatedAt
+              ? `Last report ${formatDayClock(new Date(trackerState.lastUpdatedAt))}`
+              : `Polling around every ${trackerState.reportIntervalSeconds} seconds until the tracker starts reporting.`}
+          </p>
+        </div>
+        <a
+          className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-100 px-4 py-2 text-sm font-semibold text-sky-950 transition hover:border-sky-300 hover:bg-sky-200"
+          href={trackerUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <CrosshairSimple size={16} weight="bold" aria-hidden="true" />
+          Open tracker
+        </a>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+            Freshness
+          </p>
+          <p className="mt-1 font-semibold text-slate-900">{freshness.value}</p>
+          <p className="mt-1 text-sm leading-5 text-slate-600">
+            {freshness.detail}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+            Battery
+          </p>
+          <p className="mt-1 font-semibold text-slate-900">{battery.value}</p>
+          <p className="mt-1 text-sm leading-5 text-slate-600">
+            {battery.detail}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+            Last checkpoint
+          </p>
+          <p className="mt-1 font-semibold text-slate-900">
+            {trackerState.progress.lastCheckpoint?.name ?? "Not reached yet"}
+          </p>
+          <p className="mt-1 text-sm leading-5 text-slate-600">
+            {trackerState.progress.lastCheckpoint?.plannedArrivalIso
+              ? `Planned ${formatDayClock(new Date(trackerState.progress.lastCheckpoint.plannedArrivalIso))}`
+              : "No checkpoint reached yet."}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-sky-100 bg-white/90 p-3">
+          <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+            Next checkpoint
+          </p>
+          <p className="mt-1 font-semibold text-slate-900">
+            {trackerState.progress.nextCheckpoint?.name ??
+              "Waiting for route progress"}
+          </p>
+          <p className="mt-1 text-sm leading-5 text-slate-600">
+            {trackerState.progress.distanceToNextCheckpointKm === null
+              ? "Distance will appear once route progress is available."
+              : `${trackerState.progress.distanceToNextCheckpointKm.toFixed(1)} km to go.`}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-100">
+        <iframe
+          title="Trail Live tracker"
+          src={trackerUrl}
+          className="h-[480px] w-full"
+          allow="geolocation"
+        />
+      </div>
+    </article>
+  );
+}

@@ -9,6 +9,11 @@ import {
   type CheckpointType,
 } from "@/data/bgr-data";
 import { getPlannedArrival } from "@/lib/race";
+import {
+  listTrackerArrivals,
+  upsertTrackerArrivals,
+  type StoredTrackerArrival,
+} from "@/lib/tracker-arrivals-store";
 
 const trackerParticipantUrl = `https://track.trail.live/event/${trackerEventId}/participant`;
 const trackerRoutesUrl = `https://track.trail.live/event/${trackerEventId}/routes`;
@@ -105,11 +110,14 @@ export type TrackerState = {
   } | null;
   progress: {
     snappedDistanceKm: number | null;
+    completionPercent: number | null;
+    totalDistanceKm: number | null;
     distanceToRouteMeters: number | null;
     lastCheckpoint: TrackerCheckpointSummary | null;
     nextCheckpoint: TrackerCheckpointSummary | null;
     distanceToNextCheckpointKm: number | null;
   };
+  arrivals: StoredTrackerArrival[];
   source: {
     participantUrl: string;
     routesUrl: string;
@@ -238,6 +246,8 @@ function buildProgress(
   if (!route || !lastReport || route.coords.length === 0) {
     return {
       snappedDistanceKm: null,
+      completionPercent: null,
+      totalDistanceKm: null,
       distanceToRouteMeters: null,
       lastCheckpoint: null,
       nextCheckpoint: null,
@@ -276,9 +286,15 @@ function buildProgress(
     namedCheckpoints.find(
       (point) => (point.dist ?? Number.NEGATIVE_INFINITY) > (snappedDistanceKm ?? Number.NEGATIVE_INFINITY),
     ) ?? null;
+  const totalDistanceKm = route.coords[route.coords.length - 1]?.dist ?? null;
 
   return {
     snappedDistanceKm,
+    completionPercent:
+      snappedDistanceKm !== null && totalDistanceKm && totalDistanceKm > 0
+        ? Math.min(100, Math.max(0, (snappedDistanceKm / totalDistanceKm) * 100))
+        : null,
+    totalDistanceKm,
     distanceToRouteMeters: nearestPoint?.elev ?? null,
     lastCheckpoint: lastNamedCheckpoint
       ? toCheckpointSummary(lastNamedCheckpoint.checkpoint, lastNamedCheckpoint.dist ?? null)
@@ -291,6 +307,55 @@ function buildProgress(
         ? Math.max(0, nextNamedCheckpoint.dist - snappedDistanceKm)
         : null,
   };
+}
+
+function inferCheckpointArrivals(
+  route: TrackTrailRoute | null,
+  progress: ReturnType<typeof buildProgress>,
+  lastUpdatedAt: string | null,
+  existingArrivals: StoredTrackerArrival[],
+) {
+  if (!route || progress.snappedDistanceKm === null || !lastUpdatedAt) {
+    return existingArrivals;
+  }
+
+  const arrivalsByCheckpoint = new Map(
+    existingArrivals.map((arrival) => [arrival.checkpointName, arrival]),
+  );
+  const routeCheckpointSummaries = route.coords
+    .filter(
+      (point): point is TrackTrailRoutePoint & { checkpoint: string } =>
+        typeof point.checkpoint === "string" && point.checkpoint.trim().length > 0,
+    )
+    .map((point) => ({
+      routeDistanceKm: point.dist ?? null,
+      summary: toCheckpointSummary(point.checkpoint, point.dist ?? null),
+    }))
+    .filter(
+      (
+        checkpoint,
+      ): checkpoint is {
+        routeDistanceKm: number | null;
+        summary: TrackerCheckpointSummary;
+      } => Boolean(checkpoint.summary),
+    );
+
+  for (const checkpoint of routeCheckpointSummaries) {
+    if (
+      checkpoint.routeDistanceKm !== null &&
+      checkpoint.routeDistanceKm <= progress.snappedDistanceKm &&
+      !arrivalsByCheckpoint.has(checkpoint.summary.name)
+    ) {
+      arrivalsByCheckpoint.set(checkpoint.summary.name, {
+        checkpointName: checkpoint.summary.name,
+        arrivedAt: lastUpdatedAt,
+      });
+    }
+  }
+
+  return checkpoints
+    .map((checkpoint) => arrivalsByCheckpoint.get(checkpoint.name))
+    .filter((arrival): arrival is StoredTrackerArrival => Boolean(arrival));
 }
 
 async function fetchJson<T>(url: string) {
@@ -319,6 +384,7 @@ export async function getTrackerState(): Promise<TrackerState> {
   const route = selectRoute(routesPayload, participant);
   const lastReport = participant?.lastReport ?? null;
   const lastUpdatedAt = toIsoString(lastReport?.timestamp);
+  const existingArrivals = await listTrackerArrivals();
   const reportIntervalSeconds = participant?.reportInterval ?? trackerRevalidateSeconds;
   const staleThresholdMilliseconds = reportIntervalSeconds * staleMultiplier * 1000;
   const parsedLastUpdatedAt = lastUpdatedAt ? new Date(lastUpdatedAt) : null;
@@ -331,6 +397,16 @@ export async function getTrackerState(): Promise<TrackerState> {
           : false);
 
   const progress = buildProgress(route, lastReport);
+  const arrivals = inferCheckpointArrivals(
+    route,
+    progress,
+    lastUpdatedAt,
+    existingArrivals,
+  );
+
+  if (arrivals.length > existingArrivals.length) {
+    await upsertTrackerArrivals(arrivals);
+  }
 
   return {
     participant: participant
@@ -375,6 +451,7 @@ export async function getTrackerState(): Promise<TrackerState> {
         }
       : null,
     progress,
+    arrivals,
     source: {
       participantUrl: trackerParticipantUrl,
       routesUrl: trackerRoutesUrl,

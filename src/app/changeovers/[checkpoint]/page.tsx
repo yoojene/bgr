@@ -9,7 +9,13 @@ import { notFound } from "next/navigation";
 import { ChangeoverNav } from "@/components/changeover-nav";
 import { ChangeoverNotes } from "@/components/changeover-notes";
 import { getAdjacentChangeovers, getChangeoverEntry } from "@/lib/changeovers";
-import { formatClock, formatDuration, getPlannedArrival } from "@/lib/race";
+import {
+  formatClock,
+  formatDayClock,
+  formatDuration,
+  getPlannedArrival,
+} from "@/lib/race";
+import { listTrackerArrivals } from "@/lib/tracker-arrivals-store";
 
 type PageProps = {
   params: Promise<{
@@ -28,6 +34,12 @@ export default async function ChangeoverPage({ params }: PageProps) {
   const adjacent = getAdjacentChangeovers(checkpoint);
   const plannedArrival = entry.checkpoint
     ? getPlannedArrival(entry.checkpoint)
+    : null;
+  const trackerArrivals = await listTrackerArrivals();
+  const actualArrival = entry.checkpoint
+    ? (trackerArrivals.find(
+        (arrival) => arrival.checkpointName === entry.checkpoint?.name
+      )?.arrivedAt ?? null)
     : null;
 
   return (
@@ -79,10 +91,14 @@ export default async function ChangeoverPage({ params }: PageProps) {
                 Actual
               </p>
               <p className="mt-2 text-xl font-semibold">
-                {entry.checkpoint?.actualArrival ?? "Waiting for tracker"}
+                {actualArrival
+                  ? formatDayClock(new Date(actualArrival))
+                  : "Waiting for tracker"}
               </p>
               <p className="mt-1 text-sm text-slate-300">
-                Manual override can slot in here later
+                {actualArrival
+                  ? "Persisted from the live tracker feed."
+                  : "Will populate once the tracker reaches this crew point."}
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
