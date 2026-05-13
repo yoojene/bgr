@@ -45,7 +45,7 @@ export function WebcamCarousel({ webcams, className }: Props) {
           </h2>
         </div>
         <a
-          className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-100 px-4 py-2 text-sm font-semibold text-sky-950 transition hover:border-sky-300 hover:bg-sky-200"
+          className="inline-flex min-w-[6.75rem] flex-col items-center justify-center gap-1 rounded-full border border-sky-200 bg-sky-100 px-4 py-2 text-center text-sm font-semibold leading-tight text-sky-950 transition hover:border-sky-300 hover:bg-sky-200 sm:min-w-0 sm:flex-row sm:gap-2 sm:text-left sm:leading-normal"
           href={activeWebcam.url}
           target="_blank"
           rel="noreferrer"
