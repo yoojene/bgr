@@ -25,7 +25,6 @@ import {
   formatDayClock,
   formatDuration,
   getCrewPointSummary,
-  getCrewPoints,
   getPlannedArrival,
   getSummits,
   getUpcomingCheckpoints,
@@ -202,7 +201,6 @@ export default async function Home({ searchParams }: HomeProps) {
   const nextCrewPoint = getCrewPointSummary(new Date());
   const upcomingCheckpoints = getUpcomingCheckpoints(new Date(), 5);
   const summitCheckpoints = getSummits();
-  const crewPoints = getCrewPoints();
   const trackerState =
     mockStage === null
       ? await getTrackerState()
@@ -225,7 +223,7 @@ export default async function Home({ searchParams }: HomeProps) {
         <section className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
           <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-7 text-white shadow-[0_24px_90px_rgba(15,23,42,0.28)]">
             <details className="group absolute right-6 top-6 z-20 shrink-0">
-              <summary className="flex list-none cursor-pointer items-center justify-center rounded-2xl border border-white/15 bg-white/8 p-3 text-white/90 transition hover:bg-white/14 [&::-webkit-details-marker]:hidden">
+              <summary className="flex list-none cursor-pointer items-center justify-center rounded-2xl border border-amber-200/60 bg-amber-100 p-3 text-amber-950 shadow-[0_12px_30px_rgba(251,191,36,0.24)] transition hover:border-amber-100 hover:bg-amber-50 [&::-webkit-details-marker]:hidden">
                 <span className="sr-only">Open crew points menu</span>
                 <span className="flex h-5 w-5 flex-col justify-between">
                   <span className="block h-0.5 rounded-full bg-current" />
@@ -234,31 +232,27 @@ export default async function Home({ searchParams }: HomeProps) {
                 </span>
               </summary>
 
-              <div className="absolute right-0 top-full z-20 mt-3 w-72 overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-950/96 p-3 shadow-[0_24px_80px_rgba(2,8,23,0.48)] backdrop-blur">
-                <p className="px-3 pt-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-200/80">
+              <div className="absolute right-0 top-full z-20 mt-3 w-72 overflow-hidden rounded-[1.5rem] border border-amber-200/70 bg-[linear-gradient(180deg,rgba(255,251,235,0.98)_0%,rgba(255,247,237,0.98)_100%)] p-3 shadow-[0_24px_80px_rgba(120,53,15,0.22)] backdrop-blur">
+                <p className="px-3 pt-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-700">
                   Crew points
                 </p>
                 <div className="mt-2 grid gap-2">
                   {changeoverEntries.map((entry) => {
-                    const checkpoint = crewPoints.find(
-                      (item) => item.name === entry.location.name
-                    );
-
                     return (
                       <Link
                         key={entry.slug}
                         href={`/changeovers/${entry.slug}`}
-                        className="rounded-2xl border border-white/8 bg-white/6 px-3 py-3 text-left transition hover:border-sky-300/30 hover:bg-sky-400/10"
+                        className="rounded-2xl border border-amber-100 bg-white/80 px-3 py-3 text-left transition hover:border-amber-300 hover:bg-amber-50"
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-sm font-semibold text-white">
+                          <span className="text-sm font-semibold text-slate-900">
                             {entry.location.name}
                           </span>
-                          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-200/80">
+                          {/* <span className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-200/80">
                             {checkpoint
                               ? formatClock(getPlannedArrival(checkpoint))
                               : "Stop"}
-                          </span>
+                          </span> */}
                         </div>
                       </Link>
                     );

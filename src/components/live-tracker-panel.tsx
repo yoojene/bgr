@@ -228,7 +228,7 @@ export function LiveTrackerPanel({
           </span>
           <span>{freshness.detail}</span>
         </div>
-        <div className="hidden h-4 w-px bg-sky-100 sm:block" />
+        <div className="h-px w-full bg-sky-100/90" />
         <div className="flex min-w-[12rem] flex-1 flex-col gap-1">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
             <BatteryChargingVertical
