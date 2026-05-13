@@ -14,12 +14,7 @@ import Link from "next/link";
 
 import { LiveCountdown } from "@/components/live-countdown";
 import { WebcamCarousel } from "@/components/webcam-carousel";
-import {
-  changeoverLocations,
-  checkpoints,
-  pacerLegs,
-  trackerUrl,
-} from "@/data/bgr-data";
+import { pacerLegs, trackerUrl } from "@/data/bgr-data";
 import { changeoverEntries } from "@/lib/changeovers";
 import {
   formatClock,
@@ -48,7 +43,10 @@ const sectionCardClass =
   "rounded-[1.75rem] border p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur";
 
 const keswickWebcamUrl = "https://view.h264.cam/ref/kta/live";
+const skiddawWebcamUrl = "https://view.h264.cam/ref/skiddaw/live";
 const blencathraWebcamUrl = "https://view.h264.cam/ref/blencathra/live";
+const blencathraEastWebcamUrl =
+  "https://view.h264.cam/ref/blencathra-east/live";
 
 const dashboardWebcams = [
   {
@@ -65,10 +63,23 @@ const dashboardWebcams = [
   //     "Great Gable view from Wasdale Head Inn. Cloud on Gable can make conditions look worse than nearby fells.",
   // },
   {
+    name: "Skiddaw",
+    title: "Skiddaw",
+    url: skiddawWebcamUrl,
+    description: "Live Skiddaw conditions from the Keswick.net webcam feed.",
+  },
+  {
     name: "Blencathra",
     title: "Blencathra",
     url: blencathraWebcamUrl,
     description: "Live Blencathra conditions from the Keswick.net webcam feed.",
+  },
+  {
+    name: "Blencathra East",
+    title: "Blencathra East",
+    url: blencathraEastWebcamUrl,
+    description:
+      "Live Blencathra East conditions from the Keswick.net webcam feed.",
   },
 ] as const;
 
