@@ -231,7 +231,11 @@ export function LiveTrackerPanel({
         <div className="hidden h-4 w-px bg-sky-100 sm:block" />
         <div className="flex min-w-[12rem] flex-1 flex-col gap-1">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-            <BatteryChargingVertical size={14} weight="bold" aria-hidden="true" />
+            <BatteryChargingVertical
+              size={14}
+              weight="bold"
+              aria-hidden="true"
+            />
             Battery
           </span>
           <span className="whitespace-nowrap font-semibold text-slate-900">
