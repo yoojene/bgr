@@ -237,7 +237,7 @@ export function ChangeoverNotes({ location }: Props) {
             <p className="mt-1 text-sm text-emerald-900">
               {activeSavedNote
                 ? `${activeSavedNote.authorName}${savedNotes.length > 1 ? ` • ${activeNoteIndex + 1}/${savedNotes.length}` : ""}`
-                : "Saved notes will appear here after the first successful save."}
+                : ""}
             </p>
           </div>
           {savedNotes.length > 1 ? (
