@@ -351,7 +351,7 @@ export const changeoverLocations: ChangeoverLocation[] = [
     mapsUrl: "https://maps.app.goo.gl/NpKQ6p2ZsR4G8wJr5",
     notes: "Start and finish in Keswick town centre.",
     coordinates: { latitude: 54.6007, longitude: -3.1364 },
-    runnerNote: "Start calm. Finish ready with warm layers, recovery drink, and somewhere dry fast.",
+    runnerNote: "Celebrate! 🍾",
   },
 ];
 
