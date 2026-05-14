@@ -335,7 +335,7 @@ export const changeoverLocations: ChangeoverLocation[] = [
     mapsUrl: "https://maps.app.goo.gl/7gb2ZiDS2g15MS2z5",
     notes: "Slate Mine car park. £5 all day.",
     coordinates: { latitude: 54.5175, longitude: -3.2381 },
-    runnerNote: "Refill for the final leg and confirm whether I need caffeine before Robinson.",
+    runnerNote: "Refill for the final leg and confirm whether I need more caffeine before Dale Head.",
   },
   {
     name: "Newlands Church",
