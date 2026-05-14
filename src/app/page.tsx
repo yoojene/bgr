@@ -451,7 +451,7 @@ export default async function Home({ searchParams }: HomeProps) {
                   <Mountains size={14} weight="bold" aria-hidden="true" />
                   Fell tops
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                <h2 className="mt-2 text-xl font-semibold text-slate-950">
                   ETA and actual arrival
                 </h2>
               </div>

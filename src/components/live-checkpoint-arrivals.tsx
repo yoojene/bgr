@@ -40,6 +40,22 @@ function getRenderedCheckpointStatus(
   return "Upcoming";
 }
 
+function getCheckpointStatusPillClasses(status: string) {
+  if (status === "Reached") {
+    return "bg-slate-900 text-white";
+  }
+
+  if (status === "Due soon") {
+    return "bg-amber-100 text-amber-900";
+  }
+
+  if (status === "Awaiting tracker") {
+    return "bg-rose-100 text-rose-900";
+  }
+
+  return "bg-emerald-100 text-emerald-800";
+}
+
 export function LiveCheckpointArrivals({
   checkpoints,
   initialArrivals,
@@ -97,6 +113,11 @@ export function LiveCheckpointArrivals({
       {checkpoints.map((checkpoint) => {
         const actualArrival = arrivalsByCheckpoint.get(checkpoint.name) ?? null;
         const plannedArrival = getPlannedArrival(checkpoint);
+        const status = getRenderedCheckpointStatus(
+          actualArrival,
+          plannedArrival,
+          now
+        );
 
         return (
           <div
@@ -113,14 +134,12 @@ export function LiveCheckpointArrivals({
                 </p>
               </div>
               <span
-                className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-800"
+                className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] ${getCheckpointStatusPillClasses(
+                  status
+                )}`}
                 data-testid={`checkpoint-status-${checkpoint.id}`}
               >
-                {getRenderedCheckpointStatus(
-                  actualArrival,
-                  plannedArrival,
-                  now
-                )}
+                {status}
               </span>
             </div>
             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
