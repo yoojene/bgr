@@ -17,22 +17,31 @@ function pad(value: number) {
   return value.toString().padStart(2, "0");
 }
 
+const clockFormatter = new Intl.DateTimeFormat("en-GB", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: "Europe/London",
+});
+
+const dayClockFormatter = new Intl.DateTimeFormat("en-GB", {
+  weekday: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: "Europe/London",
+});
+
 export function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60 * 1000);
 }
 
 export function formatClock(date: Date) {
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return clockFormatter.format(date);
 }
 
 export function formatDayClock(date: Date) {
-  return new Intl.DateTimeFormat("en-GB", {
-    weekday: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "Europe/London",
-  }).format(date);
+  return dayClockFormatter.format(date);
 }
 
 export function formatDuration(minutes: number) {
